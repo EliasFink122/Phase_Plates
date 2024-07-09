@@ -8,9 +8,16 @@ Generates continuous phase plates.
 Methods:
     rms:
         calculates root mean square of array
+    ideal_beam_shape:
+        super Gaussian shape of ideal laser beam
+    modulation:
+        random complex modulation added to approximate real laser beam
+    iterate:
+        iteratively find ideal phase plate phases
 """
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 def rms(arr: list) -> float:
     '''
@@ -25,59 +32,96 @@ def rms(arr: list) -> float:
     arr = np.array(arr)
     return np.sqrt(np.mean(arr*arr))
 
-def iterate(n, amp, mod_amp, mod_freq, iter):
+def ideal_beam_shape(x: float, amp: float, std: float) -> float:
     '''
-    Approximate value iteratively
+    Super Gaussian function
+    
+    Args:
+        x: parameter
+        amp: amplitude of beam
+        std: standard deviation
+
+    Returns:
+        value of laser beam
+    '''
+    return amp*np.exp(-((x**2)/std)**5)
+
+def modulation_beam(x: float, amp: float, std: float, mod_amp: float,
+                    mod_freq: float, phase: float) -> float:
+    '''
+    Adds modulation to the beam shape
+    
+    Args:
+        x: independent variable
+        mod_amp: amplitude of modulation
+        mod_freq: frequency of modulation
+        phase: complex phase of modulation
+
+    Returns:
+        value of modulation
+    '''
+    modulation = np.exp(mod_amp * np.sin(mod_freq*x)**2 * np.exp(1j*phase))
+    return ideal_beam_shape(x, amp, std) * modulation
+
+def iterate(n: int, amp: float, mod_amp: float,
+            mod_freq: float, std: float, max_iter: int = 1000):
+    '''
+    Approximate plate phases iteratively
     
     Args:
         n: number of phase elements
         amp: amplitude of laser in J
         mod_amp: modulation amplitude in J
         mod_freq: modulation frequency in Hz
-        iter: number of iterations
+        std: standard deviation of super Gaussian beam
+        max_iter: maximum number of iterations
     '''
-    x = np.linspace(-3, 3, n)
+    x = np.linspace(-std, std, n)
 
-    ideal_beam = amp*np.exp(-((x**2)/3)**5)
-
+    ideal_beam = ideal_beam_shape(x, amp, std)
     rms_ideal = rms(ideal_beam)
 
-    tol = 1.02*rms_ideal # 2% rms of ideal beam is considered smooth
+    theta_in = (np.pi/2)*np.random.randint(3, size = n) # random phases 0, π/2, π
 
-    iter = 1000
+    original_beam_electric = np.abs(modulation_beam(x, amp, std, mod_amp, mod_freq, theta_in))
 
-    for _ in range(iter):
+    for _ in range(max_iter):
 
-        input_beam_E_field = np.abs((amp * np.exp(mod_amp * (np.sin(mod_freq*x)**2) * (np.cos(theta_in) + np.imag(np.sin(theta_in)))) * np.exp(-((x**2)/3)**5) ))
+        input_beam_electric = np.abs(modulation_beam(x, amp, std, mod_amp, mod_freq, theta_in))
 
-        rms_input = rms(input_beam_E_field)
+        rms_input = rms(input_beam_electric)
 
-        if np.isclose(rms_input, rms_ideal):
+        if np.isclose(rms_input, rms_ideal): # rtol = 0.02?
             break
 
-        G_out = np.fft.fft(input_beam_E_field)
+        beam_ft = np.fft.fft(input_beam_electric)
 
-        diff = np.sum(np.abs(G_out)**2 - ideal_beam)
+        diff = np.sum(np.abs(beam_ft)**2 - ideal_beam)
 
-        theta_out = np.angle(G_out)  #finds the far field phase
+        theta_out = np.angle(beam_ft)  # far field phase
 
-        g_new = np.sqrt(ideal_beam) * (np.cos(theta_out) + np.imag(np.sin(theta_out)))
+        new_beam_ft = np.sqrt(ideal_beam) * (np.exp(1j*theta_out))
 
-        f_new = np.fft.ifft(g_new)
+        new_beam_electric = np.fft.ifft(new_beam_ft)
 
-        theta_in = np.angle(f_new) #finds near field phase
+        theta_in = np.angle(new_beam_electric) # near field phase
 
-        print(diff)
-        print(theta_in)
+    np.savetxt("phase_plate.txt", theta_in)
+    plt.plot(x, ideal_beam)
+    plt.plot(x, original_beam_electric)
+    plt.plot(x, new_beam_electric)
+    plt.show()
 
 if __name__ == "__main__":
     # initial phase elements
     PHASE_ELEMENTS = 1000
-    theta_in = (np.pi/2)*np.random.randint(3, size = PHASE_ELEMENTS) # random phases 0, pi/2 or pi
 
     # laser beam parameters
     AMPLITUDE = 5 # in J
     MODULATION_AMPLITUDE = 0.6 # in J
     MODULATION_FREQUENCY = 10 # in Hz
     FWHM = 3 # in μm
-    RADIUS_PARAMETER = FWHM/2.35482 # std dev for normal dist
+    STD_DEV = FWHM/2.35482 # std dev for Gaussian
+
+    iterate(n = PHASE_ELEMENTS, amp = AMPLITUDE, mod_amp = MODULATION_AMPLITUDE,
+            std = STD_DEV, mod_freq = MODULATION_FREQUENCY)
