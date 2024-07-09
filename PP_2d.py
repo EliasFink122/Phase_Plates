@@ -98,6 +98,28 @@ def plot_phase_plate(thetas):
     plt.imshow(thetas, cmap = 'Greys')
     plt.show()
 
+def circular_phase_plate(thetas) -> np.ndarray:
+    '''
+    Make phase plate circular
+    
+    Args:
+        thetas: array of phase values
+
+    Returns:
+        circularised phase plate
+    '''
+    radius = len(thetas)/2
+    for i, row in enumerate(thetas):
+        for j, _ in enumerate(row):
+            if np.linalg.norm([i - len(thetas)/2, j - len(thetas)/2]) > radius:
+                thetas[i, j] = 0
+    np.savetxt("phase_plate_circular_2d.txt", X = thetas,
+               header = "Phase values [pi rad]")
+    plt.imshow(thetas, cmap = 'Greys')
+    plt.show()
+
+    return thetas
+
 if __name__ == "__main__":
     # phase elements
     PHASE_ELEMENTS = 100
@@ -111,4 +133,4 @@ if __name__ == "__main__":
     # Gerchberg Saxton algorithm
     theta = gs_2d(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MOD_AMPLITUDE,
             mod_freq = MOD_FREQUENCY, max_iter = int(1e4), plot = False)
-    plot_phase_plate(theta)
+    circular_phase_plate(theta)
