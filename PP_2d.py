@@ -64,6 +64,7 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         new_beam_electric = np.fft.ifft(new_beam_ft)
         theta_in = np.angle(new_beam_electric) # near field phase
 
+    # binarise data (comment following line out for continuous phase plate)
     theta_in = round_phase(theta_in)
     np.savetxt("phase_plate_2d.txt", X = theta_in,
                header = "Phase values [pi rad]")
