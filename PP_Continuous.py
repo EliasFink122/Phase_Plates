@@ -63,8 +63,8 @@ def modulation_beam(x: float, amp: float, std: float, mod_amp: float,
     modulation = np.exp(mod_amp * np.sin(mod_freq*x)**2 * np.exp(1j*phase))
     return ideal_beam_shape(x, amp, std) * modulation
 
-def iterate(n: int, amp: float, mod_amp: float,
-            mod_freq: float, std: float, max_iter: int = 1000):
+def iterate(n: int, amp: float, mod_amp: float, mod_freq: float,
+            std: float, max_iter: int = 1000, plot: bool = False):
     '''
     Approximate plate phases iteratively
     
@@ -75,6 +75,7 @@ def iterate(n: int, amp: float, mod_amp: float,
         mod_freq: modulation frequency in Hz
         std: standard deviation of super Gaussian beam
         max_iter: maximum number of iterations
+        plot: whether to plot the input/output/ideal electric fields
     '''
     x = np.linspace(-std, std, n)
 
@@ -96,8 +97,6 @@ def iterate(n: int, amp: float, mod_amp: float,
 
         beam_ft = np.fft.fft(input_beam_electric)
 
-        diff = np.sum(np.abs(beam_ft)**2 - ideal_beam)
-
         theta_out = np.angle(beam_ft)  # far field phase
 
         new_beam_ft = np.sqrt(ideal_beam) * (np.exp(1j*theta_out))
@@ -106,11 +105,13 @@ def iterate(n: int, amp: float, mod_amp: float,
 
         theta_in = np.angle(new_beam_electric) # near field phase
 
-    np.savetxt("phase_plate.txt", theta_in)
-    plt.plot(x, ideal_beam)
-    plt.plot(x, original_beam_electric)
-    plt.plot(x, new_beam_electric)
-    plt.show()
+    # np.savetxt("phase_plate.txt", theta_in)
+    if plot:
+        plt.plot(x, ideal_beam, label = 'Ideal beam')
+        plt.plot(x, original_beam_electric, label = 'Input beam')
+        plt.plot(x, np.abs(input_beam_electric), label = 'Output beam')
+        plt.legend()
+        plt.show()
 
 if __name__ == "__main__":
     # initial phase elements
@@ -118,10 +119,9 @@ if __name__ == "__main__":
 
     # laser beam parameters
     AMPLITUDE = 5 # in J
-    MODULATION_AMPLITUDE = 0.6 # in J
-    MODULATION_FREQUENCY = 10 # in Hz
-    FWHM = 3 # in μm
-    STD_DEV = FWHM/2.35482 # std dev for Gaussian
+    STD_DEV = 3 # in μm (FWHM/2.35482 for Gaussian)
+    MODULATION_AMPLITUDE = 0.2 # in J
+    MODULATION_FREQUENCY = 10 # in μm^-1
 
-    iterate(n = PHASE_ELEMENTS, amp = AMPLITUDE, mod_amp = MODULATION_AMPLITUDE,
-            std = STD_DEV, mod_freq = MODULATION_FREQUENCY)
+    iterate(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MODULATION_AMPLITUDE,
+            mod_freq = MODULATION_FREQUENCY, max_iter = int(1e4), plot = True)
