@@ -50,7 +50,8 @@ def ideal_beam_shape(x: float, amp: float, std: float) -> float:
 def modulation_beam(x: float, amp: float, std: float, mod_amp: float,
                     mod_freq: float, phase: float) -> float:
     '''
-    Adds modulation to the beam shape
+    Adds modulation to the beam shape.
+    Change this for more control about the initial beam shape.
 
     Args:
         x: independent variable
