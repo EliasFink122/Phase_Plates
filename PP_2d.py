@@ -16,7 +16,7 @@ Methods:
 
 import numpy as np
 import matplotlib.pyplot as plt
-from PP_Tools import ideal_beam_shape, modulation_beam, round_phase
+from PP_Tools import rms, ideal_beam_shape, modulation_beam, round_phase
 
 def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
        max_iter: int = 1000, plot: bool = False) -> np.ndarray:
@@ -44,6 +44,8 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
     for i, row in enumerate(xy):
         for j, _ in enumerate(row):
             xy[i, j] = [x[i], x[j]]
+    i_arr = []
+    convergence = []
 
     # ideal beam
     ideal_beam = ideal_beam_shape(xy, amp, std)
@@ -52,7 +54,7 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
     theta_in = (np.pi/2)*np.random.randint(-2, 3, size = np.shape(xy)[:-1]) # random phases
     original_beam_electric = np.abs(modulation_beam(xy, amp, std, mod_amp, mod_freq, theta_in))
 
-    for _ in range(max_iter):
+    for i in range(max_iter):
         # initial intensity * phase from iFFT
         input_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in)
 
@@ -68,18 +70,32 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         new_beam_electric = np.fft.ifft(new_beam_ft)
         theta_in = np.angle(new_beam_electric) # near field phase
 
+        # plotting convergence
+        i_arr.append(i)
+        convergence.append(rms(np.abs(beam_ft) - ideal_beam))
+
     # binarise data (comment following line out for continuous phase plate)
     theta_in = round_phase(theta_in)
     np.savetxt("phase_plate_2d.txt", X = theta_in,
                header = "Phase values [pi rad]")
 
     if plot:
+        plt.figure()
+        plt.title("Convergence of phase plate")
+        plt.plot(i_arr, convergence)
+        plt.xlabel("Steps")
+        plt.ylabel("Difference output to ideal")
+        plt.show()
+
         x = np.linspace(-std, std, n)
         x, y = np.meshgrid(x, x)
         fig = plt.figure()
         subpl = fig.add_subplot(111, projection = '3d')
         subpl.plot_surface(x, y, original_beam_electric)
-        # subpl.plot_surface(x, y, ideal_beam)
+        subpl.plot_surface(x, y, ideal_beam)
+        subpl.set_xlabel("x [micron]")
+        subpl.set_ylabel("y [micron]")
+        subpl.set_zlabel("Energy [J]")
         plt.show()
 
         x = np.linspace(-std, std, n)
@@ -87,7 +103,10 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         fig = plt.figure()
         subpl = fig.add_subplot(111, projection = '3d')
         subpl.plot_surface(x, y, np.abs(beam_ft))
-        # subpl.plot_surface(x, y, ideal_beam)
+        subpl.plot_surface(x, y, ideal_beam)
+        subpl.set_xlabel("x [micron]")
+        subpl.set_ylabel("y [micron]")
+        subpl.set_zlabel("Energy [J]")
         plt.show()
 
     return theta_in
@@ -136,5 +155,5 @@ if __name__ == "__main__":
 
     # Gerchberg Saxton algorithm
     theta = gs_2d(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MOD_AMPLITUDE,
-            mod_freq = MOD_FREQUENCY, max_iter = int(1e4), plot = False)
+            mod_freq = MOD_FREQUENCY, max_iter = int(1e3), plot = True)
     circular_phase_plate(theta)
