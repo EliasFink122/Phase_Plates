@@ -63,6 +63,7 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         # inverse FFT
         new_beam_electric = np.fft.ifft(new_beam_ft)
         theta_in = np.angle(new_beam_electric) # near field phase
+        print(_)
 
     theta_in = round_phase(theta_in)
     np.savetxt("phase_plate_2d.txt", X = theta_in,
@@ -91,4 +92,4 @@ if __name__ == "__main__":
 
     # Gerchberg Saxton algorithm
     gs_2d(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MODULATION_AMPLITUDE,
-            mod_freq = MODULATION_FREQUENCY, max_iter = int(1e5), plot = True)
+            mod_freq = MODULATION_FREQUENCY, max_iter = int(1e3), plot = True)

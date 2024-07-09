@@ -43,7 +43,7 @@ def ideal_beam_shape(x: float, amp: float, std: float) -> float:
     Returns:
         value of laser beam
     '''
-    if len(np.shape(x)) == 3:
+    if len(np.shape(x)) == 3: # for 2-dimensional
         x = np.linalg.norm(x, axis = 2)
     return amp*np.exp(-((x**2)/(2*std**2))**5)
 
@@ -61,7 +61,7 @@ def modulation_beam(x: float, amp: float, std: float, mod_amp: float,
     Returns:
         value of modulation
     '''
-    if len(np.shape(x)) == 3:
+    if len(np.shape(x)) == 3: # for 2-dimensional
         x = np.linalg.norm(x, axis = 2)
     modulation = np.exp(mod_amp * np.sin(mod_freq*x)**2 * np.exp(1j*phase))
     return ideal_beam_shape(x, amp, std) * modulation
@@ -76,9 +76,19 @@ def round_phase(arr: list) -> np.ndarray:
     Returns:
         rounded list
     '''
-    for i, theta in enumerate(arr):
-        if np.abs(theta) >= np.pi/2:
-            arr[i] = np.pi
-        else:
-            arr[i] = 0
+    # 1-dimensional
+    if len(np.shape(arr)) == 1:
+        for i, theta in enumerate(arr):
+            if np.abs(theta) >= np.pi/2:
+                arr[i] = np.pi
+            else:
+                arr[i] = 0
+    # 2-dimensional
+    elif len(np.shape(arr)) == 2:
+        for i, row in enumerate(arr):
+            for j, theta in enumerate(row):
+                if np.abs(theta) >= np.pi/2:
+                    arr[i, j] = np.pi
+                else:
+                    arr[i, j] = 0
     return np.array(arr)
