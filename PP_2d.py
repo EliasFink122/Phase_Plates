@@ -45,7 +45,7 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
     ideal_beam = ideal_beam_shape(xy, amp, std)
 
     # initial input beam
-    theta_in = (np.pi/2)*np.random.randint(-2, 3, size = np.shape(xy)[:-1]) # random phases from -pi to pi
+    theta_in = (np.pi/2)*np.random.randint(-2, 3, size = np.shape(xy)[:-1]) # random phases
     original_beam_electric = np.abs(modulation_beam(xy, amp, std, mod_amp, mod_freq, theta_in))
 
     for _ in range(max_iter):
