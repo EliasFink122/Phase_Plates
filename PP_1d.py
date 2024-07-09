@@ -3,7 +3,7 @@ Created on Tue Jul 09 2024
 
 @author: Elias Fink (elias.fink22@imperial.ac.uk)
 
-Generates continuous phase plates.
+Generates 1-dimensional phase plates.
 
 Methods:
     gs:
@@ -50,6 +50,7 @@ def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
 
         # FFT of beam
         beam_ft = np.fft.fft(input_beam_electric)
+        beam_ft = beam_ft/max(beam_ft)*max(ideal_beam)
         theta_out = np.angle(beam_ft)  # far field phase
 
         # desired focal spot intensity * phase from FFT
@@ -67,7 +68,7 @@ def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         _, (ax1, ax2) = plt.subplots(1, 2)
         ax1.plot(x, original_beam_electric, label = 'Input beam')
         ax1.plot(x, ideal_beam, label = 'Ideal beam')
-        ax2.plot(x, np.abs(new_beam_electric), label = 'Output beam')
+        ax2.plot(x, np.abs(beam_ft), label = 'Output beam')
         ax2.plot(x, ideal_beam, label = 'Ideal beam')
         ax1.legend()
         ax2.legend()
@@ -87,4 +88,4 @@ if __name__ == "__main__":
 
     # Gerchberg Saxton algorithm
     gs(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MODULATION_AMPLITUDE,
-            mod_freq = MODULATION_FREQUENCY, plot = True)
+            mod_freq = MODULATION_FREQUENCY, max_iter = int(1e5), plot = True)
