@@ -97,9 +97,10 @@ def round_phase(arr: list) -> np.ndarray:
     '''
     # 1-dimensional
     new_arr = np.array(arr)
+    arr = np.abs(arr)
     if len(np.shape(arr)) == 1:
         for i, theta in enumerate(arr):
-            if np.abs(theta) >= np.pi/2:
+            if theta >= np.pi/2:
                 new_arr[i] = 1
             else:
                 new_arr[i] = 0
@@ -107,11 +108,11 @@ def round_phase(arr: list) -> np.ndarray:
     elif len(np.shape(arr)) == 2:
         for i, row in enumerate(arr):
             for j, theta in enumerate(row):
-                if np.abs(theta) >= np.pi/2:
+                if theta >= np.pi/2:
                     new_arr[i, j] = 1
                 else:
                     new_arr[i, j] = 0
-    print(f"RMS loss of binarisation: {rms(np.array(arr) - new_arr*np.pi):.2f}")
+    print(f"Loss of binarisation: {np.sum(np.abs((new_arr*np.pi - np.array(arr))))/np.sum(arr)*100:.2f} %")
     return new_arr
 
 def read_in(path: str, binary: bool = True) -> np.ndarray:

@@ -73,19 +73,23 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
 
         # plotting convergence
         i_arr.append(i)
-        convergence.append(rms(np.abs(beam_ft) - ideal_beam))
+        convergence.append(np.sum(np.abs(np.abs(beam_ft) - ideal_beam))/np.sum(ideal_beam))
+
+    print(f"Convergence accuracy: {100 - convergence[-1]*100:.2f} %")
 
     if binarise: # force binary phases of 0 or pi
         theta_in = round_phase(theta_in)
+
     np.savetxt("phase_plate_2d.txt", X = theta_in,
                header = "Phase values [pi rad]")
+    print("Saved phase plate as txt file.")
 
     if plot:
         plt.figure()
-        plt.title("Convergence of phase plate")
-        plt.plot(i_arr, convergence)
+        plt.title("Convergence of output to ideal")
+        plt.plot(i_arr, np.array(convergence)*100)
         plt.xlabel("Steps")
-        plt.ylabel("RMS difference output to ideal")
+        plt.ylabel("Difference [%]")
         plt.show()
 
         x = np.linspace(-std, std, n)
@@ -112,7 +116,7 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
 
     return theta_in
 
-def plot_phase_plate(thetas):
+def plot_phase_plate(thetas: np.ndarray):
     '''
     Plot phase plates.
     
@@ -122,7 +126,7 @@ def plot_phase_plate(thetas):
     plt.imshow(thetas, cmap = 'Greys')
     plt.show()
 
-def circular_phase_plate(thetas) -> np.ndarray:
+def circular_phase_plate(thetas: np.ndarray) -> np.ndarray:
     '''
     Make phase plate circular
     
@@ -133,16 +137,21 @@ def circular_phase_plate(thetas) -> np.ndarray:
         circularised phase plate
     '''
     radius = np.round(len(thetas)/2)
+    new_thetas = thetas
+    element_count = 0
     for i, row in enumerate(thetas):
         for j, _ in enumerate(row):
             if np.linalg.norm([i - radius, j - radius]) > radius:
-                thetas[i, j] = 0
-    np.savetxt("phase_plate_circular_2d.txt", X = thetas,
+                new_thetas[i, j] = 0
+            else:
+                element_count += 1
+    np.savetxt("phase_plate_circular_2d.txt", X = new_thetas,
                header = "Phase values [pi rad]")
-    plt.imshow(thetas, cmap = 'Greys')
+    print(f"Number of circular plate phase elements: {element_count}")
+    plt.imshow(new_thetas, cmap = 'Greys')
     plt.show()
 
-    return thetas
+    return new_thetas
 
 if __name__ == "__main__":
     # phase elements
@@ -155,6 +164,8 @@ if __name__ == "__main__":
     MOD_FREQUENCY = 10 # in micron^-1
 
     # Gerchberg Saxton algorithm
+    print("--- Running Gerchberg Saxton algorithm ---")
+    print(f"Total number of phase elements: {PHASE_ELEMENTS**2}")
     theta = gs_2d(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MOD_AMPLITUDE,
-            mod_freq = MOD_FREQUENCY, max_iter = int(1e3), plot = True)
+            mod_freq = MOD_FREQUENCY, max_iter = int(1e4), plot = True)
     circular_phase_plate(theta)
