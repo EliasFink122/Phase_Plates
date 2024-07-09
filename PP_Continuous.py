@@ -6,90 +6,23 @@ Created on Tue Jul 09 2024
 Generates continuous phase plates.
 
 Methods:
-    rms:
-        calculates root mean square of array
-    ideal_beam_shape:
-        super Gaussian shape of ideal laser beam
-    modulation_beam:
-        random complex modulation added to approximate real laser beam
-    round_phase:
-        round all phases to multiples of pi
     gs:
         use Gerchberg Saxton algorithm to iteratively find ideal phase plate phases
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
-
-def rms(arr: list) -> float:
-    '''
-    Root mean square value of array
-
-    Args:
-        arr: any array of numbers
-
-    Returns:
-        root mean square of array
-    '''
-    arr = np.array(arr)
-    return np.sqrt(np.mean(np.abs(arr)**2))
-
-def ideal_beam_shape(x: float, amp: float, std: float) -> float:
-    '''
-    Super Gaussian function A*e^(-(x^2/(2*std^2))^5)
-    
-    Args:
-        x: parameter
-        amp: amplitude of beam
-        std: standard deviation
-
-    Returns:
-        value of laser beam
-    '''
-    return amp*np.exp(-((x**2)/(2*std**2))**5)
-
-def modulation_beam(x: float, amp: float, std: float, mod_amp: float,
-                    mod_freq: float, phase: float) -> float:
-    '''
-    Adds modulation to the beam shape
-    
-    Args:
-        x: independent variable
-        mod_amp: amplitude of modulation
-        mod_freq: frequency of modulation
-        phase: complex phase of modulation
-
-    Returns:
-        value of modulation
-    '''
-    modulation = np.exp(mod_amp * np.sin(mod_freq*x)**2 * np.exp(1j*phase))
-    return ideal_beam_shape(x, amp, std) * modulation
-
-def round_phase(arr: list, tol: float = 1e-2) -> np.ndarray:
-    '''
-    Round phases to multiples of pi
-
-    Args:
-        arr: input phase list
-
-    Returns:
-        rounded list
-    '''
-    for i, theta in enumerate(arr):
-        if np.isclose(theta, np.pi, atol = tol):
-            arr[i] = np.pi
-        elif np.isclose(theta, -np.pi, atol = tol):
-            arr[i] = -np.pi
-        else:
-            arr[i] = 0
-    return np.array(arr)
+from PP_Tools import rms, ideal_beam_shape, modulation_beam, round_phase
 
 def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
        max_iter: int = 1000, plot: bool = False) -> np.ndarray:
     '''
     Gerchberg Saxton algorithm:
     Approximate plate phases iteratively
-    
+
+    Input intensity + phase -> FFT -> far field intensity + phase (discard intensity and use ideal)
+    -> iFFT -> near field intensity + phase (discard intensity and use ideal) -> repeat
+
     Args:
         n: number of phase elements
         amp: amplitude of laser in J
@@ -98,6 +31,9 @@ def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         std: standard deviation of super Gaussian beam
         max_iter: maximum number of iterations
         plot: whether to plot the input/output/ideal electric fields
+
+    Returns:
+        array of phases
     '''
     x = np.linspace(-std, std, n)
 
@@ -122,15 +58,13 @@ def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         theta_out = np.angle(beam_ft)  # far field phase
 
         # discarding old amplitude and only using phase
-        new_beam_ft = np.sqrt(ideal_beam) * (np.exp(1j*theta_out))
+        new_beam_ft = ideal_beam * np.exp(1j*theta_out)
 
-        # inverse FFT of beam
+        # inverse FFT
         new_beam_electric = np.fft.ifft(new_beam_ft)
         theta_in = np.angle(new_beam_electric) # near field phase
 
-    # round phases to multiples of pi
     theta_in = round_phase(theta_in)
-
     np.savetxt("phase_plate.txt", X = theta_in,
                header = "Phase values [rad]")
 
@@ -158,4 +92,4 @@ if __name__ == "__main__":
 
     # Gerchberg Saxton algorithm
     gs(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MODULATION_AMPLITUDE,
-            mod_freq = MODULATION_FREQUENCY, max_iter = int(1e5), plot = True)
+            mod_freq = MODULATION_FREQUENCY, plot = True)
