@@ -95,7 +95,7 @@ def plot_phase_plate(thetas):
     Args:
         thetas: array of phase values
     '''
-    plt.imshow(thetas, cmap = 'greys')
+    plt.imshow(thetas, cmap = 'Greys')
     plt.show()
 
 if __name__ == "__main__":
