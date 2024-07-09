@@ -10,7 +10,7 @@ Methods:
         calculates root mean square of array
     ideal_beam_shape:
         super Gaussian shape of ideal laser beam
-    modulation:
+    modulation_beam:
         random complex modulation added to approximate real laser beam
     iterate:
         iteratively find ideal phase plate phases
@@ -30,11 +30,11 @@ def rms(arr: list) -> float:
         root mean square of array
     '''
     arr = np.array(arr)
-    return np.sqrt(np.mean(arr*arr))
+    return np.sqrt(np.mean(np.abs(arr)**2))
 
 def ideal_beam_shape(x: float, amp: float, std: float) -> float:
     '''
-    Super Gaussian function
+    Super Gaussian function A*e^(-(x^2/(2*std^2))^5)
     
     Args:
         x: parameter
@@ -44,7 +44,7 @@ def ideal_beam_shape(x: float, amp: float, std: float) -> float:
     Returns:
         value of laser beam
     '''
-    return amp*np.exp(-((x**2)/std)**5)
+    return amp*np.exp(-((x**2)/(2*std**2))**5)
 
 def modulation_beam(x: float, amp: float, std: float, mod_amp: float,
                     mod_freq: float, phase: float) -> float:
@@ -79,38 +79,42 @@ def iterate(n: int, amp: float, mod_amp: float, mod_freq: float,
     '''
     x = np.linspace(-std, std, n)
 
+    # ideal beam
     ideal_beam = ideal_beam_shape(x, amp, std)
     rms_ideal = rms(ideal_beam)
 
+    # initial input beam
     theta_in = (np.pi/2)*np.random.randint(-2, 3, size = n) # random phases 0, π/2, π
-
     original_beam_electric = np.abs(modulation_beam(x, amp, std, mod_amp, mod_freq, theta_in))
 
     for _ in range(max_iter):
-
         input_beam_electric = np.abs(modulation_beam(x, amp, std, mod_amp, mod_freq, theta_in))
 
         rms_input = rms(input_beam_electric)
 
-        if np.isclose(rms_input, rms_ideal): # rtol = 0.02?
+        if np.isclose(rms_input, rms_ideal):
             break
 
+        # FFT of beam
         beam_ft = np.fft.fft(input_beam_electric)
-
         theta_out = np.angle(beam_ft)  # far field phase
 
+        # discarding old amplitude and only using phase
         new_beam_ft = np.sqrt(ideal_beam) * (np.exp(1j*theta_out))
 
+        # inverse FFT of beam
         new_beam_electric = np.fft.ifft(new_beam_ft)
-
         theta_in = np.angle(new_beam_electric) # near field phase
 
-    # np.savetxt("phase_plate.txt", theta_in)
+    np.savetxt("phase_plate.txt", theta_in)
     if plot:
-        plt.plot(x, ideal_beam, label = 'Ideal beam')
-        plt.plot(x, original_beam_electric, label = 'Input beam')
-        plt.plot(x, np.abs(input_beam_electric), label = 'Output beam')
-        plt.legend()
+        _, (ax1, ax2) = plt.subplots(1, 2)
+        ax1.plot(x, ideal_beam, label = 'Ideal beam')
+        ax1.plot(x, original_beam_electric, label = 'Input beam')
+        ax2.plot(x, ideal_beam, label = 'Ideal beam')
+        ax2.plot(x, np.abs(input_beam_electric), label = 'Output beam')
+        ax1.legend()
+        ax2.legend()
         plt.show()
 
 if __name__ == "__main__":
@@ -120,8 +124,8 @@ if __name__ == "__main__":
     # laser beam parameters
     AMPLITUDE = 5 # in J
     STD_DEV = 3 # in μm (FWHM/2.35482 for Gaussian)
-    MODULATION_AMPLITUDE = 0.2 # in J
+    MODULATION_AMPLITUDE = 0.01 # in J
     MODULATION_FREQUENCY = 10 # in μm^-1
 
     iterate(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MODULATION_AMPLITUDE,
-            mod_freq = MODULATION_FREQUENCY, max_iter = int(1e4), plot = True)
+            mod_freq = MODULATION_FREQUENCY, max_iter = int(1e5), plot = True)
