@@ -47,8 +47,8 @@ def ideal_beam_shape(x: float, amp: float, std: float) -> float:
         x = np.linalg.norm(x, axis = 2)
     return amp*np.exp(-((x**2)/(2*std**2))**5)
 
-def modulation_beam(x: float, amp: float, std: float, mod_amp: float,
-                    mod_freq: float, phase: float) -> float:
+def modulation_beam(x: float | np.ndarray, amp: float, std: float, mod_amp: float,
+                    mod_freq: float, phase: float | np.ndarray, arb: bool = False) -> float:
     '''
     Adds modulation to the beam shape.
     Change this for more control about the initial beam shape.
@@ -58,14 +58,32 @@ def modulation_beam(x: float, amp: float, std: float, mod_amp: float,
         mod_amp: amplitude of modulation
         mod_freq: frequency of modulation
         phase: complex phase of modulation
+        arb: whether to use arbitrary noise
 
     Returns:
         value of modulation
     '''
-    if len(np.shape(x)) == 3: # for 2-dimensional
-        x = np.linalg.norm(x, axis = 2)
-    modulation = np.exp(mod_amp * np.sin(mod_freq*x)**2 * np.exp(1j*phase))
+    if arb: # arbitrary noise patterns
+        modulation = arbitrary_noise(x)
+    else: # test noise pattern
+        if len(np.shape(x)) == 3: # for 2-dimensional
+            x = np.linalg.norm(x, axis = 2)
+        modulation = np.exp(mod_amp * np.sin(mod_freq*x)**2 * np.exp(1j*phase))
     return ideal_beam_shape(x, amp, std) * modulation
+
+def arbitrary_noise(x: float | np.ndarray[float]) -> float | np.ndarray:
+    '''
+    Add arbitrary noise patterns here.
+    
+    Args:
+        x: independent variable(s)
+
+    Returns:
+        noise value (must be constant or have correct dimensions)
+    '''
+    print(f"Called arbitrary noise at position {x}")
+
+    return 1
 
 def round_phase(arr: list) -> np.ndarray:
     '''
@@ -93,3 +111,18 @@ def round_phase(arr: list) -> np.ndarray:
                 else:
                     arr[i, j] = 0
     return np.array(arr)
+
+def read_in(path: str, binary: bool = True) -> np.ndarray:
+    '''
+    Read in phase plate data from txt file
+
+    Args:
+        path: absolute path to phase plate txt file
+
+    Returns:
+        phase information
+    '''
+    phase_information = np.loadtxt(path, delimiter = ' ', skiprows = 1)
+    if binary:
+        phase_information = phase_information * np.pi
+    return phase_information
