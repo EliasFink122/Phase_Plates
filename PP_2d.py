@@ -75,7 +75,7 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         fig = plt.figure()
         subpl = fig.add_subplot(111, projection = '3d')
         subpl.plot_surface(x, y, original_beam_electric)
-        subpl.plot_surface(x, y, ideal_beam)
+        # subpl.plot_surface(x, y, ideal_beam)
         plt.show()
 
         x = np.linspace(-std, std, n)
@@ -83,10 +83,20 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         fig = plt.figure()
         subpl = fig.add_subplot(111, projection = '3d')
         subpl.plot_surface(x, y, np.abs(beam_ft))
-        subpl.plot_surface(x, y, ideal_beam)
+        # subpl.plot_surface(x, y, ideal_beam)
         plt.show()
 
     return theta_in
+
+def plot_phase_plate(thetas):
+    '''
+    Plot phase plates.
+    
+    Args:
+        thetas: array of phase values
+    '''
+    plt.imshow(thetas, cmap = 'greys')
+    plt.show()
 
 if __name__ == "__main__":
     # phase elements
@@ -95,9 +105,10 @@ if __name__ == "__main__":
     # laser beam parameters
     AMPLITUDE = 5 # in J
     STD_DEV = 3 # in micron (FWHM/2.35482 for Gaussian)
-    MODULATION_AMPLITUDE = 0.1 # in J
-    MODULATION_FREQUENCY = 10 # in micron^-1
+    MOD_AMPLITUDE = 0.1 # in J
+    MOD_FREQUENCY = 10 # in micron^-1
 
     # Gerchberg Saxton algorithm
-    gs_2d(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MODULATION_AMPLITUDE,
-            mod_freq = MODULATION_FREQUENCY, max_iter = int(1e4), plot = True)
+    theta = gs_2d(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MOD_AMPLITUDE,
+            mod_freq = MOD_FREQUENCY, max_iter = int(1e4), plot = False)
+    plot_phase_plate(theta)
