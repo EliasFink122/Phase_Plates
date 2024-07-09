@@ -8,6 +8,10 @@ Generates 2-dimensional phase plates.
 Methods:
     gs:
         use Gerchberg Saxton algorithm to iteratively find ideal phase plate phases
+    plot_phase_plate:
+        shows phase plate as black-white dots for phase
+    circular_phase_plate:
+        generates circular image of phase plate from square
 """
 
 import numpy as np
