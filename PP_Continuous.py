@@ -12,8 +12,10 @@ Methods:
         super Gaussian shape of ideal laser beam
     modulation_beam:
         random complex modulation added to approximate real laser beam
-    iterate:
-        iteratively find ideal phase plate phases
+    round_phase:
+        round all phases to multiples of pi
+    gs:
+        use Gerchberg Saxton algorithm to iteratively find ideal phase plate phases
 """
 
 import numpy as np
@@ -63,6 +65,25 @@ def modulation_beam(x: float, amp: float, std: float, mod_amp: float,
     modulation = np.exp(mod_amp * np.sin(mod_freq*x)**2 * np.exp(1j*phase))
     return ideal_beam_shape(x, amp, std) * modulation
 
+def round_phase(arr: list, tol: float = 1e-2) -> np.ndarray:
+    '''
+    Round phases to multiples of pi
+
+    Args:
+        arr: input phase list
+
+    Returns:
+        rounded list
+    '''
+    for i, theta in enumerate(arr):
+        if np.isclose(theta, np.pi, atol = tol):
+            arr[i] = np.pi
+        elif np.isclose(theta, -np.pi, atol = tol):
+            arr[i] = -np.pi
+        else:
+            arr[i] = 0
+    return np.array(arr)
+
 def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
        max_iter: int = 1000, plot: bool = False) -> np.ndarray:
     '''
@@ -85,7 +106,7 @@ def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
     rms_ideal = rms(ideal_beam)
 
     # initial input beam
-    theta_in = (np.pi/2)*np.random.randint(3, size = n) # random phases 0, π/2, π
+    theta_in = (np.pi/2)*np.random.randint(3, size = n) # random phases 0, pi/2, pi
     original_beam_electric = np.abs(modulation_beam(x, amp, std, mod_amp, mod_freq, theta_in))
 
     for _ in range(max_iter):
@@ -107,16 +128,12 @@ def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         new_beam_electric = np.fft.ifft(new_beam_ft)
         theta_in = np.angle(new_beam_electric) # near field phase
 
-    for i, theta in enumerate(theta_in):
-        if np.isclose(theta, np.pi, atol = 1e-2):
-            theta_in[i] = np.pi
-        elif np.isclose(theta, -np.pi, atol = 1e-2):
-            theta_in[i] = -np.pi
-        else:
-            theta_in[i] = 0
+    # round phases to multiples of pi
+    theta_in = round_phase(theta_in)
 
     np.savetxt("phase_plate.txt", X = theta_in,
                header = "Phase values [rad]")
+
     if plot:
         _, (ax1, ax2) = plt.subplots(1, 2)
         ax1.plot(x, original_beam_electric, label = 'Input beam')
@@ -135,9 +152,9 @@ if __name__ == "__main__":
 
     # laser beam parameters
     AMPLITUDE = 5 # in J
-    STD_DEV = 3 # in μm (FWHM/2.35482 for Gaussian)
+    STD_DEV = 3 # in micron (FWHM/2.35482 for Gaussian)
     MODULATION_AMPLITUDE = 0.01 # in J
-    MODULATION_FREQUENCY = 10 # in μm^-1
+    MODULATION_FREQUENCY = 10 # in micron^-1
 
     # Gerchberg Saxton algorithm
     gs(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MODULATION_AMPLITUDE,
