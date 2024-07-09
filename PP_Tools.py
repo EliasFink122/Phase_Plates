@@ -81,7 +81,7 @@ def round_phase(arr: list) -> np.ndarray:
     if len(np.shape(arr)) == 1:
         for i, theta in enumerate(arr):
             if np.abs(theta) >= np.pi/2:
-                arr[i] = np.pi
+                arr[i] = 1
             else:
                 arr[i] = 0
     # 2-dimensional
@@ -89,7 +89,7 @@ def round_phase(arr: list) -> np.ndarray:
         for i, row in enumerate(arr):
             for j, theta in enumerate(row):
                 if np.abs(theta) >= np.pi/2:
-                    arr[i, j] = np.pi
+                    arr[i, j] = 1
                 else:
                     arr[i, j] = 0
     return np.array(arr)

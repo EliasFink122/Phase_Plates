@@ -62,7 +62,7 @@ def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
 
     theta_in = round_phase(theta_in)
     np.savetxt("phase_plate_1d.txt", X = theta_in,
-               header = "Phase values [rad]")
+               header = "Phase values [pi rad]")
 
     if plot:
         _, (ax1, ax2) = plt.subplots(1, 2)
