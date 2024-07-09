@@ -12,7 +12,7 @@ Methods:
 
 import numpy as np
 import matplotlib.pyplot as plt
-from PP_Tools import rms, ideal_beam_shape, modulation_beam, round_phase
+from PP_Tools import ideal_beam_shape, modulation_beam, round_phase
 
 def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
        max_iter: int = 1000, plot: bool = False) -> np.ndarray:
@@ -39,26 +39,21 @@ def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
 
     # ideal beam
     ideal_beam = ideal_beam_shape(x, amp, std)
-    rms_ideal = rms(ideal_beam)
 
     # initial input beam
-    theta_in = (np.pi/2)*np.random.randint(3, size = n) # random phases 0, pi/2, pi
+    theta_in = (np.pi/2)*np.random.randint(-2, 3, size = n) # random phases from -pi to pi
     original_beam_electric = np.abs(modulation_beam(x, amp, std, mod_amp, mod_freq, theta_in))
 
     for _ in range(max_iter):
-        input_beam_electric = np.abs(modulation_beam(x, amp, std, mod_amp, mod_freq, theta_in))
-
-        rms_input = rms(input_beam_electric)
-
-        if np.isclose(rms_input, rms_ideal):
-            break
+        # initial intensity * phase from iFFT
+        input_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in)
 
         # FFT of beam
         beam_ft = np.fft.fft(input_beam_electric)
         theta_out = np.angle(beam_ft)  # far field phase
 
-        # discarding old amplitude and only using phase
-        new_beam_ft = ideal_beam * np.exp(1j*theta_out)
+        # desired focal spot intensity * phase from FFT
+        new_beam_ft = np.square(ideal_beam) * np.exp(1j*theta_out)
 
         # inverse FFT
         new_beam_electric = np.fft.ifft(new_beam_ft)
@@ -72,7 +67,7 @@ def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         _, (ax1, ax2) = plt.subplots(1, 2)
         ax1.plot(x, original_beam_electric, label = 'Input beam')
         ax1.plot(x, ideal_beam, label = 'Ideal beam')
-        ax2.plot(x, np.abs(input_beam_electric), label = 'Output beam')
+        ax2.plot(x, np.abs(new_beam_electric), label = 'Output beam')
         ax2.plot(x, ideal_beam, label = 'Ideal beam')
         ax1.legend()
         ax2.legend()
