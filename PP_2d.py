@@ -110,5 +110,5 @@ if __name__ == "__main__":
 
     # Gerchberg Saxton algorithm
     theta = gs_2d(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MOD_AMPLITUDE,
-            mod_freq = MOD_FREQUENCY, max_iter = int(1e4), plot = False)
+            mod_freq = MOD_FREQUENCY, max_iter = int(1e4), plot = True)
     plot_phase_plate(theta)
