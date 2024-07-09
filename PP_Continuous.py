@@ -82,7 +82,7 @@ def iterate(n: int, amp: float, mod_amp: float, mod_freq: float,
     ideal_beam = ideal_beam_shape(x, amp, std)
     rms_ideal = rms(ideal_beam)
 
-    theta_in = (np.pi/2)*np.random.randint(3, size = n) # random phases 0, π/2, π
+    theta_in = (np.pi/2)*np.random.randint(-2, 3, size = n) # random phases 0, π/2, π
 
     original_beam_electric = np.abs(modulation_beam(x, amp, std, mod_amp, mod_freq, theta_in))
 
@@ -114,7 +114,7 @@ def iterate(n: int, amp: float, mod_amp: float, mod_freq: float,
         plt.show()
 
 if __name__ == "__main__":
-    # initial phase elements
+    # phase elements
     PHASE_ELEMENTS = 1000
 
     # laser beam parameters
