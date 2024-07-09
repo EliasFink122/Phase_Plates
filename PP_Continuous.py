@@ -63,9 +63,10 @@ def modulation_beam(x: float, amp: float, std: float, mod_amp: float,
     modulation = np.exp(mod_amp * np.sin(mod_freq*x)**2 * np.exp(1j*phase))
     return ideal_beam_shape(x, amp, std) * modulation
 
-def iterate(n: int, amp: float, mod_amp: float, mod_freq: float,
-            std: float, max_iter: int = 1000, plot: bool = False):
+def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
+       max_iter: int = 1000, plot: bool = False) -> np.ndarray:
     '''
+    Gerchberg Saxton algorithm:
     Approximate plate phases iteratively
     
     Args:
@@ -84,7 +85,7 @@ def iterate(n: int, amp: float, mod_amp: float, mod_freq: float,
     rms_ideal = rms(ideal_beam)
 
     # initial input beam
-    theta_in = (np.pi/2)*np.random.randint(-2, 3, size = n) # random phases 0, π/2, π
+    theta_in = (np.pi/2)*np.random.randint(3, size = n) # random phases 0, π/2, π
     original_beam_electric = np.abs(modulation_beam(x, amp, std, mod_amp, mod_freq, theta_in))
 
     for _ in range(max_iter):
@@ -106,16 +107,27 @@ def iterate(n: int, amp: float, mod_amp: float, mod_freq: float,
         new_beam_electric = np.fft.ifft(new_beam_ft)
         theta_in = np.angle(new_beam_electric) # near field phase
 
-    np.savetxt("phase_plate.txt", theta_in)
+    for i, theta in enumerate(theta_in):
+        if np.isclose(theta, np.pi, atol = 1e-2):
+            theta_in[i] = np.pi
+        elif np.isclose(theta, -np.pi, atol = 1e-2):
+            theta_in[i] = -np.pi
+        else:
+            theta_in[i] = 0
+
+    np.savetxt("phase_plate.txt", X = theta_in,
+               header = "Phase values [rad]")
     if plot:
         _, (ax1, ax2) = plt.subplots(1, 2)
-        ax1.plot(x, ideal_beam, label = 'Ideal beam')
         ax1.plot(x, original_beam_electric, label = 'Input beam')
-        ax2.plot(x, ideal_beam, label = 'Ideal beam')
+        ax1.plot(x, ideal_beam, label = 'Ideal beam')
         ax2.plot(x, np.abs(input_beam_electric), label = 'Output beam')
+        ax2.plot(x, ideal_beam, label = 'Ideal beam')
         ax1.legend()
         ax2.legend()
         plt.show()
+
+    return theta_in
 
 if __name__ == "__main__":
     # phase elements
@@ -127,5 +139,6 @@ if __name__ == "__main__":
     MODULATION_AMPLITUDE = 0.01 # in J
     MODULATION_FREQUENCY = 10 # in μm^-1
 
-    iterate(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MODULATION_AMPLITUDE,
+    # Gerchberg Saxton algorithm
+    gs(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MODULATION_AMPLITUDE,
             mod_freq = MODULATION_FREQUENCY, max_iter = int(1e5), plot = True)
