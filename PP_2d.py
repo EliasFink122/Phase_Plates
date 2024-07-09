@@ -112,10 +112,10 @@ def circular_phase_plate(thetas) -> np.ndarray:
     Returns:
         circularised phase plate
     '''
-    radius = len(thetas)/2
+    radius = np.round(len(thetas)/2)
     for i, row in enumerate(thetas):
         for j, _ in enumerate(row):
-            if np.linalg.norm([i - len(thetas)/2, j - len(thetas)/2]) > radius:
+            if np.linalg.norm([i - radius, j - radius]) > radius:
                 thetas[i, j] = 0
     np.savetxt("phase_plate_circular_2d.txt", X = thetas,
                header = "Phase values [pi rad]")
