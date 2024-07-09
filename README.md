@@ -6,6 +6,8 @@ For 1-dimensional phase plate, adjust parameters of beam and phase plase in PP_1
 
 For 2-dimensional phase plate do the same in PP_2d.py.
 
+To declare arbitrary noise patterns or modulations in the beam use PP_Tools.arbitrary_noise function.
+
 Input beam
 ![Input beam](https://github.com/EliasFink122/Phase_Plates/blob/main/README_Pictures/input.jpg?raw=true)
 

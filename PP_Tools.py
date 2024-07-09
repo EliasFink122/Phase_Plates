@@ -71,7 +71,7 @@ def modulation_beam(x: float | np.ndarray, amp: float, std: float, mod_amp: floa
         modulation = np.exp(mod_amp * np.sin(mod_freq*x)**2 * np.exp(1j*phase))
     return ideal_beam_shape(x, amp, std) * modulation
 
-def arbitrary_noise(x: float | np.ndarray[float]) -> float | np.ndarray:
+def arbitrary_noise(x: float | np.ndarray) -> float | np.ndarray:
     '''
     Add arbitrary noise patterns here.
     
