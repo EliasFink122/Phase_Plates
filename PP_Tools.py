@@ -43,6 +43,8 @@ def ideal_beam_shape(x: float, amp: float, std: float) -> float:
     Returns:
         value of laser beam
     '''
+    if len(np.shape(x)) == 3:
+        x = np.linalg.norm(x, axis = 2)
     return amp*np.exp(-((x**2)/(2*std**2))**5)
 
 def modulation_beam(x: float, amp: float, std: float, mod_amp: float,
@@ -59,6 +61,8 @@ def modulation_beam(x: float, amp: float, std: float, mod_amp: float,
     Returns:
         value of modulation
     '''
+    if len(np.shape(x)) == 3:
+        x = np.linalg.norm(x, axis = 2)
     modulation = np.exp(mod_amp * np.sin(mod_freq*x)**2 * np.exp(1j*phase))
     return ideal_beam_shape(x, amp, std) * modulation
 

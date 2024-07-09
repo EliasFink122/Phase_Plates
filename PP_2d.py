@@ -3,7 +3,7 @@ Created on Tue Jul 09 2024
 
 @author: Elias Fink (elias.fink22@imperial.ac.uk)
 
-Generates 1-dimensional phase plates.
+Generates 2-dimensional phase plates.
 
 Methods:
     gs:
@@ -14,17 +14,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PP_Tools import ideal_beam_shape, modulation_beam, round_phase
 
-def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
+def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
        max_iter: int = 1000, plot: bool = False) -> np.ndarray:
     '''
     Gerchberg Saxton algorithm:
-    Approximate plate phases iteratively
+    Approximate 2-d plate phases iteratively
 
     Input intensity + phase -> FFT -> far field intensity + phase (discard intensity and use ideal)
     -> iFFT -> near field intensity + phase (discard intensity and use ideal) -> repeat
 
     Args:
-        n: number of phase elements
+        n: number of phase elements in square side
         amp: amplitude of laser in J
         mod_amp: modulation amplitude in J
         mod_freq: modulation frequency in Hz
@@ -36,13 +36,17 @@ def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         array of phases
     '''
     x = np.linspace(-std, std, n)
+    xy = np.zeros((len(x), len(x), 2))
+    for i, row in enumerate(xy):
+        for j, _ in enumerate(row):
+            xy[i, j] = [x[i], x[j]]
 
     # ideal beam
-    ideal_beam = ideal_beam_shape(x, amp, std)
+    ideal_beam = ideal_beam_shape(xy, amp, std)
 
     # initial input beam
-    theta_in = (np.pi/2)*np.random.randint(-2, 3, size = n) # random phases from -pi to pi
-    original_beam_electric = np.abs(modulation_beam(x, amp, std, mod_amp, mod_freq, theta_in))
+    theta_in = (np.pi/2)*np.random.randint(-2, 3, size = np.shape(xy)[:-1]) # random phases from -pi to pi
+    original_beam_electric = np.abs(modulation_beam(xy, amp, std, mod_amp, mod_freq, theta_in))
 
     for _ in range(max_iter):
         # initial intensity * phase from iFFT
@@ -50,7 +54,7 @@ def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
 
         # FFT of beam
         beam_ft = np.fft.fft(input_beam_electric)
-        beam_ft = beam_ft/max(beam_ft)*max(ideal_beam)
+        beam_ft = beam_ft/np.max(beam_ft)*np.max(ideal_beam)
         theta_out = np.angle(beam_ft)  # far field phase
 
         # desired focal spot intensity * phase from FFT
@@ -61,17 +65,16 @@ def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         theta_in = np.angle(new_beam_electric) # near field phase
 
     theta_in = round_phase(theta_in)
-    np.savetxt("phase_plate_1d.txt", X = theta_in,
+    np.savetxt("phase_plate_2d.txt", X = theta_in,
                header = "Phase values [rad]")
 
     if plot:
-        _, (ax1, ax2) = plt.subplots(1, 2)
-        ax1.plot(x, original_beam_electric, label = 'Input beam')
-        ax1.plot(x, ideal_beam, label = 'Ideal beam')
-        ax2.plot(x, np.abs(beam_ft), label = 'Output beam')
-        ax2.plot(x, ideal_beam, label = 'Ideal beam')
-        ax1.legend()
-        ax2.legend()
+        x = np.linspace(-std, std, n)
+        x, y = np.meshgrid(x, x)
+        fig = plt.figure()
+        subpl = fig.add_subplot(111, projection = '3d')
+        subpl.plot_surface(x, y, np.abs(beam_ft))
+        subpl.plot_surface(x, y, ideal_beam)
         plt.show()
 
     return theta_in
@@ -87,5 +90,5 @@ if __name__ == "__main__":
     MODULATION_FREQUENCY = 10 # in micron^-1
 
     # Gerchberg Saxton algorithm
-    gs(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MODULATION_AMPLITUDE,
+    gs_2d(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MODULATION_AMPLITUDE,
             mod_freq = MODULATION_FREQUENCY, max_iter = int(1e5), plot = True)
