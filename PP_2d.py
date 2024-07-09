@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 from PP_Tools import rms, ideal_beam_shape, modulation_beam, round_phase
 
 def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
-       max_iter: int = 1000, plot: bool = False) -> np.ndarray:
+       max_iter: int = 1000, binarise: bool = True, plot: bool = False) -> np.ndarray:
     '''
     Gerchberg Saxton algorithm:
     Approximate 2-d plate phases iteratively
@@ -34,6 +34,7 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         mod_freq: modulation frequency in Hz
         std: standard deviation of super Gaussian beam
         max_iter: maximum number of iterations
+        binarise: whether to binarise phase plate
         plot: whether to plot the input/output/ideal electric fields
 
     Returns:
@@ -74,8 +75,8 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         i_arr.append(i)
         convergence.append(rms(np.abs(beam_ft) - ideal_beam))
 
-    # binarise data (comment following line out for continuous phase plate)
-    theta_in = round_phase(theta_in)
+    if binarise: # force binary phases of 0 or pi
+        theta_in = round_phase(theta_in)
     np.savetxt("phase_plate_2d.txt", X = theta_in,
                header = "Phase values [pi rad]")
 
@@ -84,7 +85,7 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         plt.title("Convergence of phase plate")
         plt.plot(i_arr, convergence)
         plt.xlabel("Steps")
-        plt.ylabel("Difference output to ideal")
+        plt.ylabel("RMS difference output to ideal")
         plt.show()
 
         x = np.linspace(-std, std, n)

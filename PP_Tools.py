@@ -96,21 +96,23 @@ def round_phase(arr: list) -> np.ndarray:
         rounded list
     '''
     # 1-dimensional
+    new_arr = np.array(arr)
     if len(np.shape(arr)) == 1:
         for i, theta in enumerate(arr):
             if np.abs(theta) >= np.pi/2:
-                arr[i] = 1
+                new_arr[i] = 1
             else:
-                arr[i] = 0
+                new_arr[i] = 0
     # 2-dimensional
     elif len(np.shape(arr)) == 2:
         for i, row in enumerate(arr):
             for j, theta in enumerate(row):
                 if np.abs(theta) >= np.pi/2:
-                    arr[i, j] = 1
+                    new_arr[i, j] = 1
                 else:
-                    arr[i, j] = 0
-    return np.array(arr)
+                    new_arr[i, j] = 0
+    print(f"RMS loss of binarisation: {rms(np.array(arr) - new_arr*np.pi):.2f}")
+    return new_arr
 
 def read_in(path: str, binary: bool = True) -> np.ndarray:
     '''
