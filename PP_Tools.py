@@ -181,3 +181,55 @@ def circular_phase_plate(thetas: np.ndarray) -> np.ndarray:
     plt.show()
 
     return new_thetas
+
+def smooth(arr: list) -> np.ndarray:
+    '''
+    Smooth array of float values
+
+    Args:
+        arr: list to smooth
+
+    Returns:
+        smoothed numpy array
+    '''
+    smoothed_arr = np.zeros(np.shape(arr))
+    if len(np.shape(arr)) == 1:
+        for i, val in enumerate(arr):
+            if i == 0:
+                smoothed_arr[i] = (3*val + arr[i+1])/4
+                continue
+            if i == len(arr)-1:
+                smoothed_arr[i] = (3*val + arr[i-1])/4
+                continue
+            smoothed_arr[i] = (2*val + arr[i+1] + arr[i-1])/4
+    elif len(np.shape(arr)) == 2:
+        for i, row in enumerate(arr):
+            for j, val in enumerate(row):
+                if i == 0:
+                    if j == 0:
+                        smoothed_arr[i, j] = (4*val + arr[i+1, j] + arr[i, j+1])/6
+                        continue
+                    if j == len(row)-1:
+                        smoothed_arr[i, j] = (4*val + arr[i+1, j] + arr[i, j-1])/6
+                        continue
+                    smoothed_arr[i, j] = (3*val + arr[i+1, j] + arr[i, j+1] + arr[i, j-1])/6
+                    continue
+                if i == len(arr)-1:
+                    if j == 0:
+                        smoothed_arr[i, j] = (4*val + arr[i-1, j] + arr[i, j+1])/6
+                        continue
+                    if j == len(row)-1:
+                        smoothed_arr[i, j] = (4*val + arr[i-1, j] + arr[i, j-1])/6
+                        continue
+                    smoothed_arr[i, j] = (3*val + arr[i-1, j] + arr[i, j+1] + arr[i, j-1])/6
+                    continue
+                if j == 0:
+                    smoothed_arr[i, j] = (3*val + arr[i, j+1] + arr[i-1, j] + arr[i+1, j])/6
+                    continue
+                if j == len(row)-1:
+                    smoothed_arr[i, j] = (3*val + arr[i, j-1] + arr[i-1, j] + arr[i+1, j])/6
+                    continue
+                smoothed_arr[i, j] = (2*val + arr[i+1, j] + arr[i-1, j] + arr[i, j+1] + arr[i, j-1])/6
+    else:
+        raise ValueError("Only 1 or 2 dimensional arrays allowed!")
+    return smoothed_arr
