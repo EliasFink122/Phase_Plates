@@ -98,9 +98,11 @@ def round_phase(arr: list) -> np.ndarray:
     # 1-dimensional
     new_arr = np.array(arr)
     arr = np.array(np.abs(arr))
+    thresh = np.median(arr)
+    print(f"Binarising with threshold: {thresh/np.pi:.2f} pi")
     if len(np.shape(arr)) == 1:
         for i, theta in enumerate(arr):
-            if theta >= np.pi/2:
+            if theta >= thresh:
                 new_arr[i] = 1
             else:
                 new_arr[i] = 0
@@ -109,7 +111,7 @@ def round_phase(arr: list) -> np.ndarray:
     elif len(np.shape(arr)) == 2:
         for i, row in enumerate(arr):
             for j, theta in enumerate(row):
-                if theta >= np.pi/2:
+                if theta >= thresh:
                     new_arr[i, j] = 1
                 else:
                     new_arr[i, j] = 0
