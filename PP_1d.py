@@ -94,6 +94,19 @@ def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
 
     return theta_in
 
+def main():
+    '''
+    Main module function
+
+    Do not import this function -> depends on local variables
+    '''
+    print("--- Construction of 1-d phase plate ---")
+    print(f"Total number of phase elements: {PHASE_ELEMENTS}")
+    print("Running Gerchberg Saxton algorithm")
+    gs(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV,
+       mod_amp = MODULATION_AMPLITUDE, mod_freq = MODULATION_FREQUENCY,
+       max_iter = int(MAX_ITER), binarise = BINARISE, plot = PLOT)
+
 if __name__ == "__main__":
     # INSTRUCTIONS:
     # Adjust all parameters of laser beam and phase plate
@@ -112,10 +125,4 @@ if __name__ == "__main__":
     BINARISE = True
     PLOT = True
 
-    # Gerchberg Saxton algorithm
-    print("--- Construction of 1-d phase plate ---")
-    print(f"Total number of phase elements: {PHASE_ELEMENTS}")
-    print("Running Gerchberg Saxton algorithm")
-    gs(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV,
-       mod_amp = MODULATION_AMPLITUDE, mod_freq = MODULATION_FREQUENCY,
-       max_iter = int(MAX_ITER), binarise = BINARISE, plot = PLOT)
+    main()
