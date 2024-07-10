@@ -96,40 +96,47 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         x, y = np.meshgrid(x, x)
 
         fig = plt.figure()
-        fig.suptitle("Ideal beam")
-        subpl = fig.add_subplot(111, projection = '3d')
-        subpl.plot_surface(x, y, ideal_beam)
-        subpl.set_xlabel("x [micron]")
-        subpl.set_ylabel("y [micron]")
-        subpl.set_zlabel("Energy [J]")
-
-        fig = plt.figure()
-        fig.suptitle("Original beam")
-        subpl = fig.add_subplot(111, projection = '3d')
-        subpl.plot_surface(x, y, original_beam_electric)
-        subpl.set_xlabel("x [micron]")
-        subpl.set_ylabel("y [micron]")
-        subpl.set_zlabel("Energy [J]")
-
-        fig = plt.figure()
-        fig.suptitle("Phase plate beam")
-        subpl = fig.add_subplot(111, projection = '3d')
-        subpl.plot_surface(x, y, np.abs(beam_ft))
-        subpl.set_xlabel("x [micron]")
-        subpl.set_ylabel("y [micron]")
-        subpl.set_zlabel("Energy [J]")
+        fig.suptitle("Beams")
+        if binarise:
+            ax1 = fig.add_subplot(2, 2, 1, projection = '3d')
+        else:
+            ax1 = fig.add_subplot(1, 3, 1, projection = '3d')
+        ax1.set_title("Ideal beam")
+        ax1.plot_surface(x, y, ideal_beam)
+        ax1.set_xlabel("x [micron]")
+        ax1.set_ylabel("y [micron]")
+        ax1.set_zlabel("Energy [J]")
 
         if binarise:
-            fig = plt.figure()
-            fig.suptitle("Binarised phase plate beam")
+            ax2 = fig.add_subplot(2, 2, 2, projection = '3d')
+        else:
+            ax2 = fig.add_subplot(1, 3, 2, projection = '3d')
+        ax2.set_title("Original beam")
+        ax2.plot_surface(x, y, original_beam_electric)
+        ax2.set_xlabel("x [micron]")
+        ax2.set_ylabel("y [micron]")
+        ax2.set_zlabel("Energy [J]")
+
+        if binarise:
+            ax3 = fig.add_subplot(2, 2, 3, projection = '3d')
+        else:
+            ax3 = fig.add_subplot(1, 3, 3, projection = '3d')
+        ax3.set_title("Phase plate beam")
+        ax3.plot_surface(x, y, np.abs(beam_ft))
+        ax3.set_xlabel("x [micron]")
+        ax3.set_ylabel("y [micron]")
+        ax3.set_zlabel("Energy [J]")
+
+        if binarise:
             bin_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in*np.pi)
             bin_beam_ft = np.fft.fft(bin_beam_electric)
             bin_beam_ft = bin_beam_ft/np.max(bin_beam_ft)*np.max(ideal_beam)
-            subpl = fig.add_subplot(111, projection = '3d')
-            subpl.plot_surface(x, y, np.abs(bin_beam_ft))
-            subpl.set_xlabel("x [micron]")
-            subpl.set_ylabel("y [micron]")
-            subpl.set_zlabel("Energy [J]")
+            ax4 = fig.add_subplot(2, 2, 4, projection = '3d')
+            ax4.set_title("Binarised phase plate beam")
+            ax4.plot_surface(x, y, np.abs(bin_beam_ft))
+            ax4.set_xlabel("x [micron]")
+            ax4.set_ylabel("y [micron]")
+            ax4.set_zlabel("Energy [J]")
 
         plt.show()
 
@@ -142,6 +149,7 @@ def plot_phase_plate(thetas: np.ndarray):
     Args:
         thetas: array of phase values
     '''
+    plt.title("Phase plate")
     plt.imshow(thetas, cmap = 'Greys')
     plt.show()
 
@@ -167,6 +175,7 @@ def circular_phase_plate(thetas: np.ndarray) -> np.ndarray:
     np.savetxt("Outputs/phase_plate_circular_2d.txt", X = new_thetas,
                header = "Phase values [pi rad]")
     print(f"Number of circular plate phase elements: {element_count}")
+    plt.title("Circularised phase plate")
     plt.imshow(new_thetas, cmap = 'Greys')
     plt.show()
 
