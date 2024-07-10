@@ -149,6 +149,7 @@ if __name__ == "__main__":
     # INSTRUCTIONS:
     # Adjust all parameters of laser beam and phase plate
     # Optional: create new arbitrary noise pattern in PP_Tools
+    # Get phase plate designs from Outputs folder
 
     # laser beam parameters
     AMPLITUDE = 5 # in J

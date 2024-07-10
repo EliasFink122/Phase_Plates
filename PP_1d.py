@@ -89,8 +89,10 @@ def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
     return theta_in
 
 if __name__ == "__main__":
-    # phase elements
-    PHASE_ELEMENTS = 1000
+    # INSTRUCTIONS:
+    # Adjust all parameters of laser beam and phase plate
+    # Optional: create new arbitrary noise pattern in PP_Tools
+    # Get phase plate designs from Outputs folder
 
     # laser beam parameters
     AMPLITUDE = 5 # in J
@@ -98,9 +100,16 @@ if __name__ == "__main__":
     MODULATION_AMPLITUDE = 0.01 # in J
     MODULATION_FREQUENCY = 10 # in micron^-1
 
+    # phase plate
+    PHASE_ELEMENTS = 1000
+    MAX_ITER = 1e5
+    BINARISE = True
+    PLOT = True
+
     # Gerchberg Saxton algorithm
     print("--- Construction of 1-d phase plate ---")
     print(f"Total number of phase elements: {PHASE_ELEMENTS}")
     print("Running Gerchberg Saxton algorithm")
-    gs(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MODULATION_AMPLITUDE,
-            mod_freq = MODULATION_FREQUENCY, max_iter = int(1e5), plot = True)
+    gs(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, 
+       mod_amp = MODULATION_AMPLITUDE, mod_freq = MODULATION_FREQUENCY,
+       max_iter = int(MAX_ITER), binarise = BINARISE, plot = PLOT)
