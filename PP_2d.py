@@ -174,6 +174,32 @@ def phased_zonal_plate(n: int, amp: float, std: float, mod_amp: float, mod_freq:
 
     return new_thetas
 
+def main():
+    '''
+    Main module function
+
+    Do not import this function -> depends on local variables
+    '''
+    print("--- Construction of 2-d phase plate ---")
+    print(f"Total number of phase elements: {PHASE_ELEMENTS**2}")
+    print("Running Gerchberg Saxton algorithm")
+    if TYPE == "random":
+        theta = gs_2d(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV,
+                      mod_amp = MOD_AMPLITUDE, mod_freq = MOD_FREQUENCY,
+                      max_iter = int(MAX_ITER), binarise = BINARISE,
+                      plot = PLOT)
+    elif TYPE == "zonal":
+        theta = phased_zonal_plate(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV,
+                        mod_amp = MOD_AMPLITUDE, mod_freq = MOD_FREQUENCY,
+                        binarise = BINARISE, max_iter = int(MAX_ITER))
+    else:
+        raise ValueError("Only RPP and PZP available.")
+
+    if CIRCULARISE:
+        circular_phase_plate(theta, TYPE)
+    else:
+        plot_phase_plate(theta, TYPE)
+
 if __name__ == "__main__":
     # INSTRUCTIONS:
     # Adjust all parameters of laser beam and phase plate
@@ -194,24 +220,4 @@ if __name__ == "__main__":
     PLOT = True
     CIRCULARISE = True
 
-    # Gerchberg Saxton algorithm
-    print("--- Construction of 2-d phase plate ---")
-    print(f"Total number of phase elements: {PHASE_ELEMENTS**2}")
-    print("Running Gerchberg Saxton algorithm")
-    if TYPE == "random":
-        theta = gs_2d(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV,
-                      mod_amp = MOD_AMPLITUDE, mod_freq = MOD_FREQUENCY,
-                      max_iter = int(MAX_ITER), binarise = BINARISE,
-                      plot = PLOT)
-        if CIRCULARISE:
-            circular_phase_plate(theta)
-        else:
-            plot_phase_plate(theta)
-    elif TYPE == "zonal":
-        theta = phased_zonal_plate(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV,
-                        mod_amp = MOD_AMPLITUDE, mod_freq = MOD_FREQUENCY,
-                        binarise = BINARISE, max_iter = int(MAX_ITER))
-        if CIRCULARISE:
-            circular_phase_plate(theta)
-        else:
-            plot_phase_plate(theta)
+    main()

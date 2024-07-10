@@ -143,18 +143,21 @@ def read_in(path: str, binary: bool = True) -> np.ndarray:
         phase_information = phase_information * np.pi
     return phase_information
 
-def plot_phase_plate(thetas: np.ndarray):
+def plot_phase_plate(thetas: np.ndarray, type: str):
     '''
     Plot phase plates.
     
     Args:
         thetas: array of phase values
     '''
-    plt.title("Phase plate")
+    if type == "random":
+        plt.title("Random Phase Plate")
+    elif type == "zonal":
+        plt.title("Phased Zonal Plate")
     plt.imshow(thetas, cmap = 'Greys')
     plt.show()
 
-def circular_phase_plate(thetas: np.ndarray) -> np.ndarray:
+def circular_phase_plate(thetas: np.ndarray, type: str) -> np.ndarray:
     '''
     Make phase plate circular
     
@@ -176,7 +179,10 @@ def circular_phase_plate(thetas: np.ndarray) -> np.ndarray:
     np.savetxt("Outputs/phase_plate_circular_2d.txt", X = new_thetas,
                header = "Phase values [pi rad]")
     print(f"Number of circular plate phase elements: {element_count}")
-    plt.title("Circularised phase plate")
+    if type == "random":
+        plt.title("Random Phase Plate")
+    elif type == "zonal":
+        plt.title("Phased Zonal Plate")
     plt.imshow(new_thetas, cmap = 'Greys')
     plt.show()
 
