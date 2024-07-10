@@ -16,7 +16,7 @@ Methods:
 
 import numpy as np
 import matplotlib.pyplot as plt
-from PP_Tools import rms, ideal_beam_shape, modulation_beam, round_phase
+from PP_Tools import ideal_beam_shape, modulation_beam, round_phase
 
 def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
        max_iter: int = 1000, binarise: bool = True, plot: bool = False) -> np.ndarray:
