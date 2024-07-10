@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from PP_Tools import ideal_beam_shape, modulation_beam, round_phase
 
 def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
-       max_iter: int = 1000, plot: bool = False) -> np.ndarray:
+       max_iter: int = 1000, binarise: bool = True, plot: bool = False) -> np.ndarray:
     '''
     Gerchberg Saxton algorithm:
     Approximate plate phases iteratively
@@ -60,19 +60,30 @@ def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         new_beam_electric = np.fft.ifft(new_beam_ft)
         theta_in = np.angle(new_beam_electric) # near field phase
 
-    theta_in = round_phase(theta_in)
+    if binarise:
+        theta_in = round_phase(theta_in)
     np.savetxt("Outputs/phase_plate_1d.txt", X = theta_in,
                header = "Phase values [pi rad]")
     print("Saved phase plate as txt file.")
 
     if plot:
-        _, (ax1, ax2) = plt.subplots(1, 2)
+        if binarise:
+            _, (ax1, ax2, ax3) = plt.subplots(1, 3)
+        else:
+            _, (ax1, ax2) = plt.subplots(1, 2)
         ax1.plot(x, original_beam_electric, label = 'Input beam')
         ax1.plot(x, ideal_beam, label = 'Ideal beam')
+        ax1.legend()
         ax2.plot(x, np.abs(beam_ft), label = 'Output beam')
         ax2.plot(x, ideal_beam, label = 'Ideal beam')
-        ax1.legend()
         ax2.legend()
+        if binarise:
+            bin_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in*np.pi)
+            bin_beam_ft = np.fft.fft(bin_beam_electric)
+            bin_beam_ft = bin_beam_ft/max(bin_beam_ft)*max(ideal_beam)
+            ax3.plot(x, np.abs(bin_beam_ft), label = 'Output beam binarised')
+            ax3.plot(x, ideal_beam, label = 'Ideal beam')
+            ax3.legend()
         plt.show()
 
     return theta_in

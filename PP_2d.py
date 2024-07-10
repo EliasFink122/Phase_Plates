@@ -94,24 +94,43 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
 
         x = np.linspace(-std, std, n)
         x, y = np.meshgrid(x, x)
+
         fig = plt.figure()
+        fig.suptitle("Ideal beam")
+        subpl = fig.add_subplot(111, projection = '3d')
+        subpl.plot_surface(x, y, ideal_beam)
+        subpl.set_xlabel("x [micron]")
+        subpl.set_ylabel("y [micron]")
+        subpl.set_zlabel("Energy [J]")
+
+        fig = plt.figure()
+        fig.suptitle("Original beam")
         subpl = fig.add_subplot(111, projection = '3d')
         subpl.plot_surface(x, y, original_beam_electric)
-        subpl.plot_surface(x, y, ideal_beam)
         subpl.set_xlabel("x [micron]")
         subpl.set_ylabel("y [micron]")
         subpl.set_zlabel("Energy [J]")
-        plt.show()
 
-        x = np.linspace(-std, std, n)
-        x, y = np.meshgrid(x, x)
         fig = plt.figure()
+        fig.suptitle("Phase plate beam")
         subpl = fig.add_subplot(111, projection = '3d')
         subpl.plot_surface(x, y, np.abs(beam_ft))
-        subpl.plot_surface(x, y, ideal_beam)
         subpl.set_xlabel("x [micron]")
         subpl.set_ylabel("y [micron]")
         subpl.set_zlabel("Energy [J]")
+
+        if binarise:
+            fig = plt.figure()
+            fig.suptitle("Binarised phase plate beam")
+            bin_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in*np.pi)
+            bin_beam_ft = np.fft.fft(bin_beam_electric)
+            bin_beam_ft = bin_beam_ft/np.max(bin_beam_ft)*np.max(ideal_beam)
+            subpl = fig.add_subplot(111, projection = '3d')
+            subpl.plot_surface(x, y, np.abs(bin_beam_ft))
+            subpl.set_xlabel("x [micron]")
+            subpl.set_ylabel("y [micron]")
+            subpl.set_zlabel("Energy [J]")
+
         plt.show()
 
     return theta_in
