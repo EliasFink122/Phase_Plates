@@ -84,7 +84,7 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
                header = "Phase values [pi rad]")
     print("Saved phase plate as txt file.")
 
-    if plot:
+    if plot: # plot 3d graphs of all beams
         plt.figure()
         plt.title("Convergence of output to ideal")
         plt.plot(i_arr, np.array(convergence)*100)
