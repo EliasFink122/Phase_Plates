@@ -52,6 +52,8 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
     original_beam_electric = np.abs(modulation_beam(xy, amp, std, mod_amp, mod_freq, theta_in))
 
     for i in range(max_iter):
+        if int(i/max_iter / 0.05) != int((i-1)/max_iter / 0.05):
+            print(f"GS algorithm: {int((i/max_iter) * 100)} %")
         # initial intensity * phase from iFFT
         input_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in)
 
@@ -158,5 +160,5 @@ if __name__ == "__main__":
     print(f"Total number of phase elements: {PHASE_ELEMENTS**2}")
     print("Running Gerchberg Saxton algorithm")
     theta = gs_2d(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MOD_AMPLITUDE,
-            mod_freq = MOD_FREQUENCY, max_iter = int(1e3), plot = True)
+            mod_freq = MOD_FREQUENCY, max_iter = int(1e4), plot = True)
     circular_phase_plate(theta)
