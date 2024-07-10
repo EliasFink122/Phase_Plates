@@ -63,6 +63,7 @@ def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
     theta_in = round_phase(theta_in)
     np.savetxt("phase_plate_1d.txt", X = theta_in,
                header = "Phase values [pi rad]")
+    print("Saved phase plate as txt file.")
 
     if plot:
         _, (ax1, ax2) = plt.subplots(1, 2)
@@ -87,5 +88,7 @@ if __name__ == "__main__":
     MODULATION_FREQUENCY = 10 # in micron^-1
 
     # Gerchberg Saxton algorithm
+    print("--- Running Gerchberg Saxton algorithm ---")
+    print(f"Total number of phase elements: {PHASE_ELEMENTS}")
     gs(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MODULATION_AMPLITUDE,
             mod_freq = MODULATION_FREQUENCY, max_iter = int(1e5), plot = True)
