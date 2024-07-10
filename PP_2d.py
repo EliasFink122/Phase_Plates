@@ -146,8 +146,8 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
 
     return theta_in
 
-def phased_zonal_plate(n: int, amp: float, std: float,
-                       mod_amp: float, mod_freq: float) -> np.ndarray:
+def phased_zonal_plate(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
+                       binarise: bool = False, max_iter: float = 1000) -> np.ndarray:
     '''
     Turn random phase plate into phased zonal plate
     
@@ -157,7 +157,7 @@ def phased_zonal_plate(n: int, amp: float, std: float,
     Returns:
         phases of phased zonal plate
     '''
-    thetas = gs_2d(n, amp, std, mod_amp, mod_freq, 10*n, False, False)
+    thetas = gs_2d(n, amp, std, mod_amp, mod_freq, max_iter, False, False)
     new_thetas = np.zeros((len(thetas)*10, len(thetas)*10))
 
     for i, row in enumerate(new_thetas):
@@ -169,8 +169,8 @@ def phased_zonal_plate(n: int, amp: float, std: float,
         if int(i/smooth_iter / 0.05) != int((i-1)/smooth_iter / 0.05):
             print(f"Zonalising: {int((i/smooth_iter) * 100)} %")
         new_thetas = smooth(new_thetas)
-
-    new_thetas = round_phase(new_thetas)
+    if binarise:
+        new_thetas = round_phase(new_thetas)
 
     return new_thetas
 
@@ -187,8 +187,8 @@ if __name__ == "__main__":
     MOD_FREQUENCY = 10 # in micron^-1
 
     # phase plate
-    TYPE = "zonal"
-    PHASE_ELEMENTS = 100
+    TYPE = "zonal" # "random" for RPP and "zonal" for PZP
+    PHASE_ELEMENTS = 100 # number of elements will be this squared
     MAX_ITER = 1e4
     BINARISE = True
     PLOT = True
@@ -199,15 +199,18 @@ if __name__ == "__main__":
     print(f"Total number of phase elements: {PHASE_ELEMENTS**2}")
     print("Running Gerchberg Saxton algorithm")
     if TYPE == "random":
-        theta = gs_2d(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MOD_AMPLITUDE,
-                mod_freq = MOD_FREQUENCY, max_iter = int(MAX_ITER), binarise = BINARISE, plot = PLOT)
+        theta = gs_2d(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV,
+                      mod_amp = MOD_AMPLITUDE, mod_freq = MOD_FREQUENCY,
+                      max_iter = int(MAX_ITER), binarise = BINARISE,
+                      plot = PLOT)
         if CIRCULARISE:
             circular_phase_plate(theta)
         else:
             plot_phase_plate(theta)
     elif TYPE == "zonal":
         theta = phased_zonal_plate(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV,
-                        mod_amp = MOD_AMPLITUDE, mod_freq = MOD_FREQUENCY)
+                        mod_amp = MOD_AMPLITUDE, mod_freq = MOD_FREQUENCY,
+                        binarise = BINARISE, max_iter = int(MAX_ITER))
         if CIRCULARISE:
             circular_phase_plate(theta)
         else:
