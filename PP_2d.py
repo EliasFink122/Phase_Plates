@@ -72,10 +72,15 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         i_arr.append(i)
         convergence.append(np.sum(np.abs(np.abs(beam_ft) - ideal_beam))/np.sum(ideal_beam))
 
-    print(f"Convergence accuracy: {100 - convergence[-1]*100:.2f} %")
+    print(f"Continuous convergence accuracy: {100 - convergence[-1]*100:.2f} %")
 
     if binarise: # force binary phases of 0 or pi
         theta_in = round_phase(theta_in)
+        bin_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in*np.pi)
+        bin_beam_ft = np.fft.fft(bin_beam_electric)
+        bin_beam_ft = bin_beam_ft/np.max(bin_beam_ft)*np.max(ideal_beam)
+        conv = np.sum(np.abs(np.abs(bin_beam_ft) - ideal_beam))/np.sum(ideal_beam)
+        print(f"Binarised convergence accuracy: {100 - conv*100:.2f} %")
 
     np.savetxt("Outputs/phase_plate_2d.txt", X = theta_in,
                header = "Phase values [pi rad]")
@@ -118,7 +123,7 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
             ax3 = fig.add_subplot(2, 2, 3, projection = '3d')
         else:
             ax3 = fig.add_subplot(1, 3, 3, projection = '3d')
-        ax3.set_title("Phase plate beam")
+        ax3.set_title("Continuous phase plate beam")
         ax3.plot_surface(x, y, np.abs(beam_ft))
         ax3.set_xlabel("x [micron]")
         ax3.set_ylabel("y [micron]")
