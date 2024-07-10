@@ -56,19 +56,19 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
             print(f"GS algorithm: {int((i/max_iter) * 100)} %")
 
         # initial intensity * phase from iFFT
-        input_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in)
-
-        # FFT of beam
-        beam_ft = np.fft.fft(input_beam_electric)
-        beam_ft = beam_ft/np.max(beam_ft)*np.max(ideal_beam)
-        theta_out = np.angle(beam_ft)  # far field phase
-
-        # desired focal spot intensity * phase from FFT
-        new_beam_ft = np.square(ideal_beam) * np.exp(1j*theta_out)
-
-        # inverse FFT
-        new_beam_electric = np.fft.ifft(new_beam_ft)
-        theta_in = np.angle(new_beam_electric) # near field phase
+        input_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in) # <--
+                                                                                     #     |
+        # FFT of beam                                                                      |
+        beam_ft = np.fft.fft(input_beam_electric)                                    #     |
+        beam_ft = beam_ft/np.max(beam_ft)*np.max(ideal_beam)                         #     |
+        theta_out = np.angle(beam_ft)  # far field phase                                   |
+                                                                                     #     ^
+        # desired focal spot intensity * phase from FFT                                    |
+        new_beam_ft = np.square(ideal_beam) * np.exp(1j*theta_out)                   #     |
+                                                                                     #     |
+        # inverse FFT                                                                      |
+        new_beam_electric = np.fft.ifft(new_beam_ft)                                 #     |
+        theta_in = np.angle(new_beam_electric) # near field phase -------------->-----------
 
         # plotting convergence
         i_arr.append(i)
