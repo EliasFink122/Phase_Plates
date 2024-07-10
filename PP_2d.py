@@ -80,7 +80,7 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
     if binarise: # force binary phases of 0 or pi
         theta_in = round_phase(theta_in)
 
-    np.savetxt("phase_plate_2d.txt", X = theta_in,
+    np.savetxt("Outputs/phase_plate_2d.txt", X = theta_in,
                header = "Phase values [pi rad]")
     print("Saved phase plate as txt file.")
 
@@ -145,7 +145,7 @@ def circular_phase_plate(thetas: np.ndarray) -> np.ndarray:
                 new_thetas[i, j] = 0
             else:
                 element_count += 1
-    np.savetxt("phase_plate_circular_2d.txt", X = new_thetas,
+    np.savetxt("Outputs/phase_plate_circular_2d.txt", X = new_thetas,
                header = "Phase values [pi rad]")
     print(f"Number of circular plate phase elements: {element_count}")
     plt.imshow(new_thetas, cmap = 'Greys')

@@ -61,7 +61,7 @@ def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         theta_in = np.angle(new_beam_electric) # near field phase
 
     theta_in = round_phase(theta_in)
-    np.savetxt("phase_plate_1d.txt", X = theta_in,
+    np.savetxt("Outputs/phase_plate_1d.txt", X = theta_in,
                header = "Phase values [pi rad]")
     print("Saved phase plate as txt file.")
 
