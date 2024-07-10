@@ -44,7 +44,10 @@ def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
     theta_in = (np.pi/2)*np.random.randint(-2, 3, size = n) # random phases from -pi to pi
     original_beam_electric = np.abs(modulation_beam(x, amp, std, mod_amp, mod_freq, theta_in))
 
-    for _ in range(max_iter):
+    for i in range(max_iter):
+        if int(i/max_iter / 0.05) != int((i-1)/max_iter / 0.05):
+            print(f"GS algorithm: {int((i/max_iter) * 100)} %")
+
         # initial intensity * phase from iFFT
         input_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in)
 
@@ -110,6 +113,6 @@ if __name__ == "__main__":
     print("--- Construction of 1-d phase plate ---")
     print(f"Total number of phase elements: {PHASE_ELEMENTS}")
     print("Running Gerchberg Saxton algorithm")
-    gs(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, 
+    gs(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV,
        mod_amp = MODULATION_AMPLITUDE, mod_freq = MODULATION_FREQUENCY,
        max_iter = int(MAX_ITER), binarise = BINARISE, plot = PLOT)

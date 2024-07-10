@@ -54,6 +54,7 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
     for i in range(max_iter):
         if int(i/max_iter / 0.05) != int((i-1)/max_iter / 0.05):
             print(f"GS algorithm: {int((i/max_iter) * 100)} %")
+
         # initial intensity * phase from iFFT
         input_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in)
 
@@ -157,7 +158,7 @@ if __name__ == "__main__":
     MOD_AMPLITUDE = 0.1 # in J
     MOD_FREQUENCY = 10 # in micron^-1
 
-    # Phase plate parameters
+    # phase plate
     PHASE_ELEMENTS = 100
     MAX_ITER = 1e4
     BINARISE = True
