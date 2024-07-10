@@ -23,6 +23,8 @@ def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
     Input intensity + phase -> FFT -> far field intensity + phase (discard intensity and use ideal)
     -> iFFT -> near field intensity + phase (discard intensity and use ideal) -> repeat
 
+    Mathematical process by D. A. Pepler (d.a.pepler@rl.ac.uk)
+
     Args:
         n: number of phase elements
         amp: amplitude of laser in J
@@ -30,6 +32,7 @@ def gs(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         mod_freq: modulation frequency in Hz
         std: standard deviation of super Gaussian beam
         max_iter: maximum number of iterations
+        binarise: whether to binarise phase plate
         plot: whether to plot the input/output/ideal electric fields
 
     Returns:

@@ -23,6 +23,8 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
     Input intensity + phase -> FFT -> far field intensity + phase (discard intensity and use ideal)
     -> iFFT -> near field intensity + phase (discard intensity and use ideal) -> repeat
 
+    Mathematical process by D. A. Pepler (d.a.pepler@rl.ac.uk)
+
     Args:
         n: number of phase elements in square side
         amp: amplitude of laser in J
@@ -152,7 +154,13 @@ def phased_zonal_plate(n: int, amp: float, std: float, mod_amp: float, mod_freq:
     Turn random phase plate into phased zonal plate
     
     Args:
-        thetas: phases of random phase plate
+        n: number of phase elements in square side
+        amp: amplitude of laser in J
+        mod_amp: modulation amplitude in J
+        mod_freq: modulation frequency in Hz
+        std: standard deviation of super Gaussian beam
+        binarise: whether to binarise phase plate
+        max_iter: maximum number of iterations
 
     Returns:
         phases of phased zonal plate
