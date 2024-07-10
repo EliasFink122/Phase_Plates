@@ -96,7 +96,7 @@ def arbitrary_noise(x: float | np.ndarray) -> float | np.ndarray:
 
 def round_phase(arr: list) -> np.ndarray:
     '''
-    Round phases to 0 or pi
+    Round phases to 0 or pi (binarise)
 
     Args:
         arr: input phase list
@@ -112,19 +112,19 @@ def round_phase(arr: list) -> np.ndarray:
     if len(np.shape(arr)) == 1:
         for i, theta in enumerate(arr):
             if theta >= thresh:
-                new_arr[i] = 1
+                new_arr[i] = np.pi
             else:
                 new_arr[i] = 0
-        loss = np.sum(np.abs(new_arr - arr/np.pi))/len(arr)
+        loss = np.sum(np.abs(new_arr - arr)/np.pi)/len(arr)
     # 2-dimensional
     elif len(np.shape(arr)) == 2:
         for i, row in enumerate(arr):
             for j, theta in enumerate(row):
                 if theta >= thresh:
-                    new_arr[i, j] = 1
+                    new_arr[i, j] = np.pi
                 else:
                     new_arr[i, j] = 0
-        loss = np.sum(np.abs(new_arr - arr/np.pi))/(len(arr)**2)
+        loss = np.sum(np.abs(new_arr - arr)/np.pi)/(len(arr)**2)
     print(f"Loss of binarisation: {loss*100:.2f} %")
     return new_arr
 
@@ -143,26 +143,28 @@ def read_in(path: str, binary: bool = True) -> np.ndarray:
         phase_information = phase_information * np.pi
     return phase_information
 
-def plot_phase_plate(thetas: np.ndarray, type: str):
+def plot_phase_plate(thetas: np.ndarray, plate_type: str):
     '''
     Plot phase plates.
     
     Args:
         thetas: array of phase values
+        plate_type: type of plate (random or zonal)
     '''
-    if type == "random":
+    if plate_type == "random":
         plt.title("Random Phase Plate")
-    elif type == "zonal":
+    elif plate_type == "zonal":
         plt.title("Phased Zonal Plate")
     plt.imshow(thetas, cmap = 'Greys')
     plt.show()
 
-def circular_phase_plate(thetas: np.ndarray, type: str) -> np.ndarray:
+def circular_phase_plate(thetas: np.ndarray, plate_type: str) -> np.ndarray:
     '''
     Make phase plate circular
     
     Args:
         thetas: array of phase values
+        plate_type: type of plate (random or zonal)
 
     Returns:
         circularised phase plate
@@ -176,12 +178,14 @@ def circular_phase_plate(thetas: np.ndarray, type: str) -> np.ndarray:
                 new_thetas[i, j] = 0
             else:
                 element_count += 1
-    np.savetxt("Outputs/phase_plate_circular_2d.txt", X = new_thetas,
-               header = "Phase values [pi rad]")
     print(f"Number of circular plate phase elements: {element_count}")
-    if type == "random":
+    if plate_type == "random":
+        np.savetxt("Outputs/random_phase_plate_circular_2d.txt", X = new_thetas,
+               header = "Phase values [rad]")
         plt.title("Random Phase Plate")
-    elif type == "zonal":
+    elif plate_type == "zonal":
+        np.savetxt("Outputs/phased_zonal_plate_circular_2d.txt", X = new_thetas,
+               header = "Phase values [rad]")
         plt.title("Phased Zonal Plate")
     plt.imshow(new_thetas, cmap = 'Greys')
     plt.show()

@@ -86,8 +86,8 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
         conv = np.sum(np.abs(np.abs(bin_beam_ft) - ideal_beam))/np.sum(ideal_beam)
         print(f"Binarised convergence accuracy: {100 - conv*100:.2f} %")
 
-    np.savetxt("Outputs/phase_plate_2d.txt", X = theta_in,
-               header = "Phase values [pi rad]")
+    np.savetxt("Outputs/random_phase_plate_2d.txt", X = theta_in,
+               header = "Phase values [rad]")
     print("Saved phase plate as txt file.")
 
     if plot: # plot 3d graphs of all beams
@@ -179,6 +179,9 @@ def phased_zonal_plate(n: int, amp: float, std: float, mod_amp: float, mod_freq:
         new_thetas = smooth(new_thetas)
     if binarise:
         new_thetas = round_phase(new_thetas)
+
+    np.savetxt("Outputs/phased_zonal_plate_2d.txt", X = thetas,
+               header = "Phase values [rad]")
 
     return new_thetas
 
