@@ -12,11 +12,20 @@ Methods:
         super Gaussian shape of ideal laser beam
     modulation_beam:
         random complex modulation added to approximate real laser beam
+    arbitrary_noise:
+        generate any arbitrary noise pattern on top of ideal beam
     round_phase:
         round all phases to multiples of pi
+    read_in:
+        read in phase plate data for analysis
+    plot_phase_plate:
+        shows phase plate as black-white dots for phase
+    circular_phase_plate:
+        generates circular image of phase plate from square
 """
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 def rms(arr: list) -> float:
     '''
@@ -133,3 +142,42 @@ def read_in(path: str, binary: bool = True) -> np.ndarray:
     if binary:
         phase_information = phase_information * np.pi
     return phase_information
+
+def plot_phase_plate(thetas: np.ndarray):
+    '''
+    Plot phase plates.
+    
+    Args:
+        thetas: array of phase values
+    '''
+    plt.title("Phase plate")
+    plt.imshow(thetas, cmap = 'Greys')
+    plt.show()
+
+def circular_phase_plate(thetas: np.ndarray) -> np.ndarray:
+    '''
+    Make phase plate circular
+    
+    Args:
+        thetas: array of phase values
+
+    Returns:
+        circularised phase plate
+    '''
+    radius = np.round(len(thetas)/2)
+    new_thetas = thetas
+    element_count = 0
+    for i, row in enumerate(thetas):
+        for j, _ in enumerate(row):
+            if np.linalg.norm([i - radius, j - radius]) > radius:
+                new_thetas[i, j] = 0
+            else:
+                element_count += 1
+    np.savetxt("Outputs/phase_plate_circular_2d.txt", X = new_thetas,
+               header = "Phase values [pi rad]")
+    print(f"Number of circular plate phase elements: {element_count}")
+    plt.title("Circularised phase plate")
+    plt.imshow(new_thetas, cmap = 'Greys')
+    plt.show()
+
+    return new_thetas

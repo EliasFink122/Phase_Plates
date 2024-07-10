@@ -8,15 +8,11 @@ Generates 2-dimensional phase plates.
 Methods:
     gs:
         use Gerchberg Saxton algorithm to iteratively find ideal phase plate phases
-    plot_phase_plate:
-        shows phase plate as black-white dots for phase
-    circular_phase_plate:
-        generates circular image of phase plate from square
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
-from PP_Tools import ideal_beam_shape, modulation_beam, round_phase
+from PP_Tools import ideal_beam_shape, modulation_beam, round_phase, circular_phase_plate
 
 def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
        max_iter: int = 1000, binarise: bool = True, plot: bool = False) -> np.ndarray:
@@ -142,45 +138,6 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
         plt.show()
 
     return theta_in
-
-def plot_phase_plate(thetas: np.ndarray):
-    '''
-    Plot phase plates.
-    
-    Args:
-        thetas: array of phase values
-    '''
-    plt.title("Phase plate")
-    plt.imshow(thetas, cmap = 'Greys')
-    plt.show()
-
-def circular_phase_plate(thetas: np.ndarray) -> np.ndarray:
-    '''
-    Make phase plate circular
-    
-    Args:
-        thetas: array of phase values
-
-    Returns:
-        circularised phase plate
-    '''
-    radius = np.round(len(thetas)/2)
-    new_thetas = thetas
-    element_count = 0
-    for i, row in enumerate(thetas):
-        for j, _ in enumerate(row):
-            if np.linalg.norm([i - radius, j - radius]) > radius:
-                new_thetas[i, j] = 0
-            else:
-                element_count += 1
-    np.savetxt("Outputs/phase_plate_circular_2d.txt", X = new_thetas,
-               header = "Phase values [pi rad]")
-    print(f"Number of circular plate phase elements: {element_count}")
-    plt.title("Circularised phase plate")
-    plt.imshow(new_thetas, cmap = 'Greys')
-    plt.show()
-
-    return new_thetas
 
 if __name__ == "__main__":
     # phase elements
