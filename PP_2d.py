@@ -52,7 +52,6 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
     original_beam_electric = np.abs(modulation_beam(xy, amp, std, mod_amp, mod_freq, theta_in))
 
     for i in range(max_iter):
-        print(i)
         # initial intensity * phase from iFFT
         input_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in)
 
