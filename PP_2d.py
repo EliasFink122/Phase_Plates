@@ -12,9 +12,9 @@ Methods:
 
 import numpy as np
 import matplotlib.pyplot as plt
-from PP_Tools import ideal_beam_shape, modulation_beam, round_phase, circular_phase_plate
+from PP_Tools import ideal_beam_shape, modulation_beam, round_phase, circular_phase_plate, plot_phase_plate
 
-def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
+def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
        max_iter: int = 1000, binarise: bool = True, plot: bool = False) -> np.ndarray:
     '''
     Gerchberg Saxton algorithm:
@@ -146,8 +146,9 @@ def gs_2d(n: int, amp: float, mod_amp: float, mod_freq: float, std: float,
     return theta_in
 
 if __name__ == "__main__":
-    # phase elements
-    PHASE_ELEMENTS = 100
+    # INSTRUCTIONS:
+    # Adjust all parameters of laser beam and phase plate
+    # Optional: create new arbitrary noise pattern in PP_Tools
 
     # laser beam parameters
     AMPLITUDE = 5 # in J
@@ -155,10 +156,20 @@ if __name__ == "__main__":
     MOD_AMPLITUDE = 0.1 # in J
     MOD_FREQUENCY = 10 # in micron^-1
 
+    # Phase plate parameters
+    PHASE_ELEMENTS = 100
+    MAX_ITER = 1e4
+    BINARISE = True
+    PLOT = True
+    CIRCULARISE = True
+
     # Gerchberg Saxton algorithm
     print("--- Construction of 2-d phase plate ---")
     print(f"Total number of phase elements: {PHASE_ELEMENTS**2}")
     print("Running Gerchberg Saxton algorithm")
     theta = gs_2d(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MOD_AMPLITUDE,
-            mod_freq = MOD_FREQUENCY, max_iter = int(1e4), plot = True)
-    circular_phase_plate(theta)
+            mod_freq = MOD_FREQUENCY, max_iter = int(MAX_ITER), binarise = BINARISE, plot = PLOT)
+    if CIRCULARISE:
+        circular_phase_plate(theta)
+    else:
+        plot_phase_plate(theta)
