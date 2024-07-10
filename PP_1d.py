@@ -88,7 +88,8 @@ if __name__ == "__main__":
     MODULATION_FREQUENCY = 10 # in micron^-1
 
     # Gerchberg Saxton algorithm
-    print("--- Running Gerchberg Saxton algorithm ---")
+    print("--- Construction of 1-d phase plate ---")
     print(f"Total number of phase elements: {PHASE_ELEMENTS}")
+    print("Running Gerchberg Saxton algorithm")
     gs(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV, mod_amp = MODULATION_AMPLITUDE,
             mod_freq = MODULATION_FREQUENCY, max_iter = int(1e5), plot = True)
