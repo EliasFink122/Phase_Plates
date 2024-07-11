@@ -106,24 +106,24 @@ def round_phase(arr: list, nsteps = 2) -> np.ndarray:
     '''
     new_arr = np.array(arr)
     arr = np.array(np.abs(arr))
-    thresh = (np.pi/2)/(nsteps - 1)
+    discret = np.pi/(nsteps - 1)
 
     # 1-dimensional
-    print(f"Binarising with threshold: {thresh/np.pi:.2f} pi")
+    print(f"Binarising with steps: {discret/np.pi:.4f} pi")
     if len(np.shape(arr)) == 1:
         for i, theta in enumerate(arr):
-            for n in range(nsteps):
-                if theta <= n*thresh:
-                    new_arr[i] = np.pi
+            for n in range(nsteps + 1):
+                if theta <= (n+1/2)*discret:
+                    new_arr[i] = n*discret
                     break
         loss = np.sum(np.abs(new_arr - arr)/np.pi)/len(arr)
     # 2-dimensional
     elif len(np.shape(arr)) == 2:
         for i, row in enumerate(arr):
             for j, theta in enumerate(row):
-                for n in range(nsteps):
-                    if theta <= n*thresh:
-                        new_arr[i, j] = np.pi
+                for n in range(nsteps + 1):
+                    if theta <= (n+1/2)*discret:
+                        new_arr[i, j] = n*discret
                         break
         loss = np.sum(np.abs(new_arr - arr)/np.pi)/(len(arr)**2)
     print(f"Data loss of discretisation: {loss*100:.2f} %")

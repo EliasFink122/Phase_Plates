@@ -135,7 +135,11 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
 
         if discrete:
             bin_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in*np.pi)
-            bin_beam_ft = np.fft.fft2(bin_beam_electric)
+            bin_beam_ft = np.abs(np.fft.fft2(bin_beam_electric))
+            for i, row in enumerate(bin_beam_ft):
+                for j, value in enumerate(row):
+                    if value > np.mean(bin_beam_ft)*10:
+                        bin_beam_ft[i, j] = 0
             bin_beam_ft = bin_beam_ft/np.max(bin_beam_ft)*np.max(ideal_beam)
             ax4 = fig.add_subplot(2, 2, 4, projection = '3d')
             ax4.set_title("Discrete phase plate beam")
@@ -255,9 +259,9 @@ if __name__ == "__main__":
     # phase plate
     TYPE = "random" # "random" for RPP and "zonal" for PZP
     PHASE_ELEMENTS = 100 # number of elements will be this squared
-    MAX_ITER = 1e4
+    MAX_ITER = 1e3
     DISCRETE = True
-    NSTEPS = 10 # if DISCRETE = True only
+    NSTEPS = 100 # if DISCRETE = True only
     PLOT = True
     CIRCULARISE = True
 
