@@ -121,9 +121,10 @@ def round_phase(arr: list, nsteps = 2) -> np.ndarray:
     elif len(np.shape(arr)) == 2:
         for i, row in enumerate(arr):
             for j, theta in enumerate(row):
-                if theta <= n*thresh:
-                    new_arr[i] = np.pi
-                    break
+                for n in range(nsteps):
+                    if theta <= n*thresh:
+                        new_arr[i, j] = np.pi
+                        break
         loss = np.sum(np.abs(new_arr - arr)/np.pi)/(len(arr)**2)
     print(f"Data loss of discretisation: {loss*100:.2f} %")
     return new_arr

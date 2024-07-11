@@ -78,13 +78,13 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
 
     print(f"Continuous convergence accuracy: {100 - convergence[-1]*100:.2f} %")
 
-    if discrete: # force binary phases of 0 or pi
+    if discrete: # force discrete phases
         theta_in = round_phase(theta_in, nsteps)
         bin_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in*np.pi)
         bin_beam_ft = np.fft.fft(bin_beam_electric)
         bin_beam_ft = bin_beam_ft/np.max(bin_beam_ft)*np.max(ideal_beam)
         conv = np.sum(np.abs(np.abs(bin_beam_ft) - ideal_beam))/np.sum(ideal_beam)
-        print(f"Binarised convergence accuracy: {100 - conv*100:.2f} %")
+        print(f"Discretised convergence accuracy: {100 - conv*100:.2f} %")
 
     np.savetxt("Outputs/random_phase_plate_2d.txt", X = theta_in,
                header = "Phase values [rad]")
@@ -133,12 +133,12 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
         ax3.set_ylabel("y [micron]")
         ax3.set_zlabel("Energy [J]")
 
-        if binarise:
+        if discrete:
             bin_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in*np.pi)
             bin_beam_ft = np.fft.fft2(bin_beam_electric)
             bin_beam_ft = bin_beam_ft/np.max(bin_beam_ft)*np.max(ideal_beam)
             ax4 = fig.add_subplot(2, 2, 4, projection = '3d')
-            ax4.set_title("Binarised phase plate beam")
+            ax4.set_title("Discrete phase plate beam")
             ax4.plot_surface(x, y, np.abs(bin_beam_ft))
             ax4.set_xlabel("x [micron]")
             ax4.set_ylabel("y [micron]")
@@ -257,7 +257,7 @@ if __name__ == "__main__":
     PHASE_ELEMENTS = 100 # number of elements will be this squared
     MAX_ITER = 1e4
     DISCRETE = True
-    NSTEPS = 2 # if discrete
+    NSTEPS = 10 # if DISCRETE = True only
     PLOT = True
     CIRCULARISE = True
 
