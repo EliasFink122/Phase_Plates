@@ -94,7 +94,7 @@ def arbitrary_noise(x: float | np.ndarray) -> float | np.ndarray:
 
     return 1
 
-def round_phase(arr: list) -> np.ndarray:
+def round_phase(arr: list, nsteps = 2) -> np.ndarray:
     '''
     Round phases to 0 or pi (binarise)
 
@@ -104,28 +104,28 @@ def round_phase(arr: list) -> np.ndarray:
     Returns:
         rounded list
     '''
-    # 1-dimensional
     new_arr = np.array(arr)
     arr = np.array(np.abs(arr))
-    thresh = np.median(arr)
+    thresh = (np.pi/2)/(nsteps - 1)
+
+    # 1-dimensional
     print(f"Binarising with threshold: {thresh/np.pi:.2f} pi")
     if len(np.shape(arr)) == 1:
         for i, theta in enumerate(arr):
-            if theta >= thresh:
-                new_arr[i] = np.pi
-            else:
-                new_arr[i] = 0
+            for n in range(nsteps):
+                if theta <= n*thresh:
+                    new_arr[i] = np.pi
+                    break
         loss = np.sum(np.abs(new_arr - arr)/np.pi)/len(arr)
     # 2-dimensional
     elif len(np.shape(arr)) == 2:
         for i, row in enumerate(arr):
             for j, theta in enumerate(row):
-                if theta >= thresh:
-                    new_arr[i, j] = np.pi
-                else:
-                    new_arr[i, j] = 0
+                if theta <= n*thresh:
+                    new_arr[i] = np.pi
+                    break
         loss = np.sum(np.abs(new_arr - arr)/np.pi)/(len(arr)**2)
-    print(f"Loss of binarisation: {loss*100:.2f} %")
+    print(f"Data loss of discretisation: {loss*100:.2f} %")
     return new_arr
 
 def read_in(path: str) -> np.ndarray:

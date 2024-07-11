@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from PP_Tools import *
 
 def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
-       max_iter = 1000, binarise = True, plot = False, pzp = False) -> np.ndarray:
+       max_iter = 1000, discrete = True, plot = False, pzp = False, nsteps = 2) -> np.ndarray:
     '''
     Gerchberg Saxton algorithm:
     Approximate 2-d plate phases iteratively
@@ -78,8 +78,8 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
 
     print(f"Continuous convergence accuracy: {100 - convergence[-1]*100:.2f} %")
 
-    if binarise: # force binary phases of 0 or pi
-        theta_in = round_phase(theta_in)
+    if discrete: # force binary phases of 0 or pi
+        theta_in = round_phase(theta_in, nsteps)
         bin_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in*np.pi)
         bin_beam_ft = np.fft.fft(bin_beam_electric)
         bin_beam_ft = bin_beam_ft/np.max(bin_beam_ft)*np.max(ideal_beam)
@@ -103,7 +103,7 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
 
         fig = plt.figure()
         fig.suptitle("Beams")
-        if binarise:
+        if discrete:
             ax1 = fig.add_subplot(2, 2, 1, projection = '3d')
         else:
             ax1 = fig.add_subplot(1, 3, 1, projection = '3d')
@@ -113,7 +113,7 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
         ax1.set_ylabel("y [micron]")
         ax1.set_zlabel("Energy [J]")
 
-        if binarise:
+        if discrete:
             ax2 = fig.add_subplot(2, 2, 2, projection = '3d')
         else:
             ax2 = fig.add_subplot(1, 3, 2, projection = '3d')
@@ -123,7 +123,7 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
         ax2.set_ylabel("y [micron]")
         ax2.set_zlabel("Energy [J]")
 
-        if binarise:
+        if discrete:
             ax3 = fig.add_subplot(2, 2, 3, projection = '3d')
         else:
             ax3 = fig.add_subplot(1, 3, 3, projection = '3d')
@@ -152,7 +152,7 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
     return theta_in
 
 def phased_zonal_plate(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
-                       binarise: bool = False, max_iter: float = 1000) -> np.ndarray:
+                       discrete= False, max_iter= 1000, nsteps = 2) -> np.ndarray:
     '''
     Turn random phase plate into phased zonal plate
     
@@ -187,8 +187,8 @@ def phased_zonal_plate(n: int, amp: float, std: float, mod_amp: float, mod_freq:
         if int(i/smooth_iter / 0.05) != int((i-1)/smooth_iter / 0.05):
             print(f"Zonalising: {int((i/smooth_iter) * 100)} %")
         new_thetas = smooth(new_thetas)
-    if binarise:
-        new_thetas = round_phase(new_thetas)
+    if discrete:
+        new_thetas = round_phase(new_thetas, nsteps)
 
     np.savetxt("Outputs/phased_zonal_plate_2d.txt", X = new_thetas,
                header = "Phase values [rad]")
@@ -226,12 +226,12 @@ def main():
     if TYPE == "random":
         theta = gs_2d(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV,
                       mod_amp = MOD_AMPLITUDE, mod_freq = MOD_FREQUENCY,
-                      max_iter = int(MAX_ITER), binarise = BINARISE,
-                      plot = PLOT)
+                      max_iter = int(MAX_ITER), discrete = DISCRETE,
+                      plot = PLOT, nsteps = NSTEPS)
     elif TYPE == "zonal":
         theta = phased_zonal_plate(n = PHASE_ELEMENTS, amp = AMPLITUDE, std = STD_DEV,
                         mod_amp = MOD_AMPLITUDE, mod_freq = MOD_FREQUENCY,
-                        binarise = BINARISE, max_iter = int(MAX_ITER))
+                        discrete = DISCRETE, max_iter = int(MAX_ITER), nsteps = NSTEPS)
     else:
         raise ValueError("Only RPP and PZP available.")
 
@@ -249,14 +249,15 @@ if __name__ == "__main__":
     # laser beam parameters
     AMPLITUDE = 5 # in J
     STD_DEV = 3 # in micron (FWHM/2.35482 for Gaussian)
-    MOD_AMPLITUDE = 1 # in J
+    MOD_AMPLITUDE = 0.1 # in J
     MOD_FREQUENCY = 10 # in micron^-1
 
     # phase plate
     TYPE = "random" # "random" for RPP and "zonal" for PZP
     PHASE_ELEMENTS = 100 # number of elements will be this squared
     MAX_ITER = 1e4
-    BINARISE = True
+    DISCRETE = True
+    NSTEPS = 2 # if discrete
     PLOT = True
     CIRCULARISE = True
 
