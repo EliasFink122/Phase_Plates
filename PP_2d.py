@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from PP_Tools import *
 
 def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
-       max_iter: int = 1000, binarise: bool = True, plot: bool = False) -> np.ndarray:
+       max_iter = 1000, binarise = True, plot = False, pzp = False) -> np.ndarray:
     '''
     Gerchberg Saxton algorithm:
     Approximate 2-d plate phases iteratively
@@ -146,6 +146,9 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
 
         plt.show()
 
+    if pzp:
+        return theta_in, original_beam_electric
+
     return theta_in
 
 def phased_zonal_plate(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
@@ -165,12 +168,17 @@ def phased_zonal_plate(n: int, amp: float, std: float, mod_amp: float, mod_freq:
     Returns:
         phases of phased zonal plate
     '''
-    thetas = gs_2d(n, amp, std, mod_amp, mod_freq, max_iter, False, False)
+    thetas, obe = gs_2d(n, amp, std, mod_amp, mod_freq, max_iter, False, False, True)
     new_thetas = np.zeros((len(thetas)*10, len(thetas)*10))
+    new_obe = np.zeros((len(obe)*10, len(obe)*10))
 
     for i, row in enumerate(new_thetas):
         for j, _ in enumerate(row):
             new_thetas[i, j] = thetas[int(i/10), int(j/10)]
+
+    for i, row in enumerate(new_obe):
+        for j, _ in enumerate(row):
+            new_obe[i, j] = obe[int(i/10), int(j/10)]
 
     smooth_iter = 100
     for i in range(smooth_iter):
@@ -180,8 +188,29 @@ def phased_zonal_plate(n: int, amp: float, std: float, mod_amp: float, mod_freq:
     if binarise:
         new_thetas = round_phase(new_thetas)
 
-    np.savetxt("Outputs/phased_zonal_plate_2d.txt", X = thetas,
+    np.savetxt("Outputs/phased_zonal_plate_2d.txt", X = new_thetas,
                header = "Phase values [rad]")
+    plt.imshow(new_thetas, cmap = 'Greys')
+    plt.show()
+
+    x = np.linspace(-std, std, n*10)
+    xy = np.zeros((len(x), len(x), 2))
+    for i, row in enumerate(xy):
+        for j, _ in enumerate(row):
+            xy[i, j] = [x[i], x[j]]
+    x, y = np.meshgrid(x, x)
+    ideal_beam = ideal_beam_shape(xy, amp, std)
+    fig = plt.figure()
+    fig.suptitle("Phased zonal plate beam")
+    bin_beam_electric = np.square(new_obe) * np.exp(1j*new_thetas*np.pi)
+    bin_beam_ft = np.fft.fft(bin_beam_electric)
+    bin_beam_ft = bin_beam_ft/np.max(bin_beam_ft)*np.max(ideal_beam)
+    ax = fig.add_subplot(111, projection = '3d')
+    ax.plot_surface(x, y, np.abs(bin_beam_ft))
+    ax.set_xlabel("x [micron]")
+    ax.set_ylabel("y [micron]")
+    ax.set_zlabel("Energy [J]")
+    plt.show()
 
     return new_thetas
 
