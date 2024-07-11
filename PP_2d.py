@@ -61,7 +61,7 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
         input_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in) # <--
                                                                                      #     |
         # FFT of beam                                                                      |
-        beam_ft = np.fft.fft(input_beam_electric)                                    #     |
+        beam_ft = np.fft.fft2(input_beam_electric)                                   #     |
         beam_ft = beam_ft/np.max(beam_ft)*np.max(ideal_beam)                         #     |
         theta_out = np.angle(beam_ft)  # far field phase                                   |
                                                                                      #     ^
@@ -69,7 +69,7 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
         new_beam_ft = np.square(ideal_beam) * np.exp(1j*theta_out)                   #     |
                                                                                      #     |
         # inverse FFT                                                                      |
-        new_beam_electric = np.fft.ifft(new_beam_ft)                                 #     |
+        new_beam_electric = np.fft.ifft2(new_beam_ft)                                #     |
         theta_in = np.angle(new_beam_electric) # near field phase -------------->-----------
 
         # plotting convergence
@@ -135,7 +135,7 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
 
         if binarise:
             bin_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in*np.pi)
-            bin_beam_ft = np.fft.fft(bin_beam_electric)
+            bin_beam_ft = np.fft.fft2(bin_beam_electric)
             bin_beam_ft = bin_beam_ft/np.max(bin_beam_ft)*np.max(ideal_beam)
             ax4 = fig.add_subplot(2, 2, 4, projection = '3d')
             ax4.set_title("Binarised phase plate beam")
@@ -168,19 +168,21 @@ def phased_zonal_plate(n: int, amp: float, std: float, mod_amp: float, mod_freq:
     Returns:
         phases of phased zonal plate
     '''
+    exp_factor = 1
+
     thetas, obe = gs_2d(n, amp, std, mod_amp, mod_freq, max_iter, False, False, True)
-    new_thetas = np.zeros((len(thetas)*10, len(thetas)*10))
-    new_obe = np.zeros((len(obe)*10, len(obe)*10))
+    new_thetas = np.zeros((len(thetas)*exp_factor, len(thetas)*exp_factor))
+    new_obe = np.zeros((len(obe)*exp_factor, len(obe)*exp_factor))
 
     for i, row in enumerate(new_thetas):
         for j, _ in enumerate(row):
-            new_thetas[i, j] = thetas[int(i/10), int(j/10)]
+            new_thetas[i, j] = thetas[int(i/exp_factor), int(j/exp_factor)]
 
     for i, row in enumerate(new_obe):
         for j, _ in enumerate(row):
-            new_obe[i, j] = obe[int(i/10), int(j/10)]
+            new_obe[i, j] = obe[int(i/exp_factor), int(j/exp_factor)]
 
-    smooth_iter = 100
+    smooth_iter = 5
     for i in range(smooth_iter):
         if int(i/smooth_iter / 0.05) != int((i-1)/smooth_iter / 0.05):
             print(f"Zonalising: {int((i/smooth_iter) * 100)} %")
@@ -190,10 +192,8 @@ def phased_zonal_plate(n: int, amp: float, std: float, mod_amp: float, mod_freq:
 
     np.savetxt("Outputs/phased_zonal_plate_2d.txt", X = new_thetas,
                header = "Phase values [rad]")
-    plt.imshow(new_thetas, cmap = 'Greys')
-    plt.show()
 
-    x = np.linspace(-std, std, n*10)
+    x = np.linspace(-std, std, n*exp_factor)
     xy = np.zeros((len(x), len(x), 2))
     for i, row in enumerate(xy):
         for j, _ in enumerate(row):
@@ -202,8 +202,8 @@ def phased_zonal_plate(n: int, amp: float, std: float, mod_amp: float, mod_freq:
     ideal_beam = ideal_beam_shape(xy, amp, std)
     fig = plt.figure()
     fig.suptitle("Phased zonal plate beam")
-    bin_beam_electric = np.square(new_obe) * np.exp(1j*new_thetas*np.pi)
-    bin_beam_ft = np.fft.fft(bin_beam_electric)
+    bin_beam_electric = np.square(new_obe) * np.exp(1j*new_thetas)
+    bin_beam_ft = np.fft.fft2(bin_beam_electric)
     bin_beam_ft = bin_beam_ft/np.max(bin_beam_ft)*np.max(ideal_beam)
     ax = fig.add_subplot(111, projection = '3d')
     ax.plot_surface(x, y, np.abs(bin_beam_ft))
@@ -249,11 +249,11 @@ if __name__ == "__main__":
     # laser beam parameters
     AMPLITUDE = 5 # in J
     STD_DEV = 3 # in micron (FWHM/2.35482 for Gaussian)
-    MOD_AMPLITUDE = 0.1 # in J
+    MOD_AMPLITUDE = 1 # in J
     MOD_FREQUENCY = 10 # in micron^-1
 
     # phase plate
-    TYPE = "zonal" # "random" for RPP and "zonal" for PZP
+    TYPE = "random" # "random" for RPP and "zonal" for PZP
     PHASE_ELEMENTS = 100 # number of elements will be this squared
     MAX_ITER = 1e4
     BINARISE = True

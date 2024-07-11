@@ -128,7 +128,7 @@ def round_phase(arr: list) -> np.ndarray:
     print(f"Loss of binarisation: {loss*100:.2f} %")
     return new_arr
 
-def read_in(path: str, binary: bool = True) -> np.ndarray:
+def read_in(path: str) -> np.ndarray:
     '''
     Read in phase plate data from txt file
 
@@ -139,8 +139,6 @@ def read_in(path: str, binary: bool = True) -> np.ndarray:
         phase information
     '''
     phase_information = np.loadtxt(path, delimiter = ' ', skiprows = 1)
-    if binary:
-        phase_information = phase_information * np.pi
     return phase_information
 
 def plot_phase_plate(thetas: np.ndarray, plate_type: str):
