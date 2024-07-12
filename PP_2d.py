@@ -261,7 +261,7 @@ if __name__ == "__main__":
     PHASE_ELEMENTS = 100 # number of elements will be this squared
     MAX_ITER = 1e3
     DISCRETE = True
-    NSTEPS = 100 # if DISCRETE = True only
+    NSTEPS = 10 # if DISCRETE = True only
     PLOT = True
     CIRCULARISE = True
 

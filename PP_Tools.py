@@ -96,7 +96,7 @@ def arbitrary_noise(x: float | np.ndarray) -> float | np.ndarray:
 
 def round_phase(arr: list, nsteps = 2) -> np.ndarray:
     '''
-    Round phases to 0 or pi (binarise)
+    Discretise phase plate
 
     Args:
         arr: input phase list
@@ -109,7 +109,7 @@ def round_phase(arr: list, nsteps = 2) -> np.ndarray:
     discret = np.pi/(nsteps - 1)
 
     # 1-dimensional
-    print(f"Binarising with steps: {discret/np.pi:.4f} pi")
+    print(f"Discretising with steps: {discret/np.pi:.4f} pi")
     if len(np.shape(arr)) == 1:
         for i, theta in enumerate(arr):
             for n in range(nsteps + 1):
