@@ -86,7 +86,7 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
             for j, value in enumerate(row):
                 if value > np.mean(bin_beam_ft)*5:
                     bin_beam_ft[i, j] = 0
-        bin_beam_ft = bin_beam_ft/np.max(bin_beam_ft)*np.max(ideal_beam)
+        bin_beam_ft = bin_beam_ft/np.mean(bin_beam_ft)*np.mean(ideal_beam)
         conv = np.sum(np.abs(bin_beam_ft - ideal_beam))/np.sum(ideal_beam)
         print(f"Discretised convergence accuracy: {100 - conv*100:.2f} %")
 
@@ -255,8 +255,8 @@ if __name__ == "__main__":
     TYPE = "random" # "random" for RPP and "zonal" for PZP
     PHASE_ELEMENTS = 100 # number of elements will be this squared
     MAX_ITER = 1e3
-    DISCRETE = False
-    NSTEPS = 10000 # if DISCRETE = True only
+    DISCRETE = True
+    NSTEPS = 1000 # if DISCRETE = True only
     PLOT = True
     CIRCULARISE = True
 

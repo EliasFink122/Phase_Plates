@@ -104,29 +104,29 @@ def round_phase(arr: list, nsteps = 2) -> np.ndarray:
     Returns:
         rounded list
     '''
+    print(f"Discretising with {nsteps} steps.")
     new_arr = np.array(arr)
-    arr = np.array(np.abs(arr))
-    discret = np.pi/(nsteps - 1)
+    discret = 2*np.pi/(nsteps - 1)
 
     # 1-dimensional
-    print(f"Discretising with steps: {discret/np.pi:.4f} pi")
     if len(np.shape(arr)) == 1:
         for i, theta in enumerate(arr):
+            if theta <= 0:
+                theta += 2*np.pi
             for n in range(nsteps + 1):
                 if theta <= (n+1/2)*discret:
                     new_arr[i] = n*discret
                     break
-        loss = np.sum(np.abs(new_arr - arr)/np.pi)/len(arr)
     # 2-dimensional
     elif len(np.shape(arr)) == 2:
         for i, row in enumerate(arr):
             for j, theta in enumerate(row):
+                if theta <= 0:
+                    theta += 2*np.pi
                 for n in range(nsteps + 1):
                     if theta <= (n+1/2)*discret:
                         new_arr[i, j] = n*discret
                         break
-        loss = np.sum(np.abs(new_arr - arr)/np.pi)/(len(arr)**2)
-    print(f"Data loss of discretisation: {loss*100:.2f} %")
     return new_arr
 
 def read_in(path: str) -> np.ndarray:
