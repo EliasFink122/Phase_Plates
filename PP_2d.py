@@ -80,10 +80,14 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
 
     if discrete: # force discrete phases
         theta_in = round_phase(theta_in, nsteps)
-        bin_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in*np.pi)
-        bin_beam_ft = np.fft.fft(bin_beam_electric)
+        bin_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in)
+        bin_beam_ft = np.abs(np.fft.fft2(bin_beam_electric))
+        for i, row in enumerate(bin_beam_ft):
+            for j, value in enumerate(row):
+                if value > np.mean(bin_beam_ft)*5:
+                    bin_beam_ft[i, j] = 0
         bin_beam_ft = bin_beam_ft/np.max(bin_beam_ft)*np.max(ideal_beam)
-        conv = np.sum(np.abs(np.abs(bin_beam_ft) - ideal_beam))/np.sum(ideal_beam)
+        conv = np.sum(np.abs(bin_beam_ft - ideal_beam))/np.sum(ideal_beam)
         print(f"Discretised convergence accuracy: {100 - conv*100:.2f} %")
 
     np.savetxt("Outputs/random_phase_plate_2d.txt", X = theta_in,
@@ -103,30 +107,28 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
 
         fig = plt.figure()
         fig.suptitle("Beams")
+
         if discrete:
             ax1 = fig.add_subplot(2, 2, 1, projection = '3d')
+            ax2 = fig.add_subplot(2, 2, 2, projection = '3d')
+            ax3 = fig.add_subplot(2, 2, 3, projection = '3d')
         else:
             ax1 = fig.add_subplot(1, 3, 1, projection = '3d')
+            ax2 = fig.add_subplot(1, 3, 2, projection = '3d')
+            ax3 = fig.add_subplot(1, 3, 3, projection = '3d')
+
         ax1.set_title("Ideal beam")
         ax1.plot_surface(x, y, ideal_beam)
         ax1.set_xlabel("x [micron]")
         ax1.set_ylabel("y [micron]")
         ax1.set_zlabel("Energy [J]")
 
-        if discrete:
-            ax2 = fig.add_subplot(2, 2, 2, projection = '3d')
-        else:
-            ax2 = fig.add_subplot(1, 3, 2, projection = '3d')
         ax2.set_title("Original beam")
         ax2.plot_surface(x, y, original_beam_electric)
         ax2.set_xlabel("x [micron]")
         ax2.set_ylabel("y [micron]")
         ax2.set_zlabel("Energy [J]")
 
-        if discrete:
-            ax3 = fig.add_subplot(2, 2, 3, projection = '3d')
-        else:
-            ax3 = fig.add_subplot(1, 3, 3, projection = '3d')
         ax3.set_title("Continuous phase plate beam")
         ax3.plot_surface(x, y, np.abs(beam_ft))
         ax3.set_xlabel("x [micron]")
@@ -134,13 +136,6 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
         ax3.set_zlabel("Energy [J]")
 
         if discrete:
-            bin_beam_electric = np.square(original_beam_electric) * np.exp(1j*theta_in*np.pi)
-            bin_beam_ft = np.abs(np.fft.fft2(bin_beam_electric))
-            for i, row in enumerate(bin_beam_ft):
-                for j, value in enumerate(row):
-                    if value > np.mean(bin_beam_ft)*10:
-                        bin_beam_ft[i, j] = 0
-            bin_beam_ft = bin_beam_ft/np.max(bin_beam_ft)*np.max(ideal_beam)
             ax4 = fig.add_subplot(2, 2, 4, projection = '3d')
             ax4.set_title("Discrete phase plate beam")
             ax4.plot_surface(x, y, np.abs(bin_beam_ft))
@@ -260,8 +255,8 @@ if __name__ == "__main__":
     TYPE = "random" # "random" for RPP and "zonal" for PZP
     PHASE_ELEMENTS = 100 # number of elements will be this squared
     MAX_ITER = 1e3
-    DISCRETE = True
-    NSTEPS = 10 # if DISCRETE = True only
+    DISCRETE = False
+    NSTEPS = 10000 # if DISCRETE = True only
     PLOT = True
     CIRCULARISE = True
 
