@@ -167,7 +167,7 @@ def phased_zonal_plate(n: int, amp: float, std: float, mod_amp: float, mod_freq:
     Returns:
         phases of phased zonal plate
     '''
-    exp_factor = 1
+    exp_factor = 10
 
     thetas, obe = gs_2d(n, amp, std, mod_amp, mod_freq, max_iter, False, False, True)
     new_thetas = np.zeros((len(thetas)*exp_factor, len(thetas)*exp_factor))
@@ -252,11 +252,11 @@ if __name__ == "__main__":
     MOD_FREQUENCY = 10 # in micron^-1
 
     # phase plate
-    TYPE = "random" # "random" for RPP and "zonal" for PZP
+    TYPE = "zonal" # "random" for RPP and "zonal" for PZP
     PHASE_ELEMENTS = 100 # number of elements will be this squared
     MAX_ITER = 1e3
     DISCRETE = True
-    NSTEPS = 1000 # if DISCRETE = True only
+    NSTEPS = 10 # if DISCRETE = True only
     PLOT = True
     CIRCULARISE = True
 
