@@ -76,6 +76,11 @@ def gs_2d(n: int, amp: float, std: float, mod_amp: float, mod_freq: float,
         i_arr.append(i)
         convergence.append(np.sum(np.abs(np.abs(beam_ft) - ideal_beam))/np.sum(ideal_beam))
 
+        for i, row in enumerate(theta_in):
+            for j, theta in enumerate(row):
+                if theta < 0:
+                    theta_in[i, j] += 2*np.pi
+
     print(f"Continuous convergence accuracy: {100 - convergence[-1]*100:.2f} %")
 
     if discrete: # force discrete phases
